@@ -1,16 +1,23 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
 
+import {PeopleService} from '../../providers/people-service/people-service';
+
 @Component({
   selector: 'page-list',
-  templateUrl: 'list.html'
+  templateUrl: 'list.html',
+  providers: [PeopleService]
 })
 export class ListPage {
   selectedItem: any;
   icons: string[];
   items: Array<{title: string, note: string, icon: string}>;
+  public people: any;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
+
+  constructor(public navCtrl: NavController, public navParams: NavParams, public peopleService: PeopleService) {
+    // this.loadPeople();
+
     // If we navigated to this page, we will have an item available as a nav param
     this.selectedItem = navParams.get('item');
 
@@ -28,6 +35,14 @@ export class ListPage {
     }
   }
 
+
+  loadPeople(){
+    this.peopleService.load('just load data testing')
+    .then(data => {
+      // this.people = data;
+      console.log( data);
+    });
+  }
   itemTapped(event, item) {
     // That's right, we're pushing to ourselves!
     this.navCtrl.push(ListPage, {

@@ -1,9 +1,12 @@
 import { Component } from '@angular/core';
-import { Facebook, FacebookLoginResponse } from '@ionic-native/facebook';
+import { Facebook } from '@ionic-native/facebook';
 import { GooglePlus } from '@ionic-native/google-plus';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { NativeStorage } from '@ionic-native/native-storage';
 
 import { HomePage } from '../home/home';
+
+import { ApiService } from '../../providers/api-service/api-service';
 
 /**
  * Generated class for the LoginPage page.
@@ -15,12 +18,19 @@ import { HomePage } from '../home/home';
 @Component({
   selector: 'page-login',
   templateUrl: 'login.html',
+  providers: [ApiService]
 })
 export class LoginPage {
 
   FB_APP_ID: number = 1849240425339924;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, private facebook: Facebook, private googlePlus: GooglePlus) {
+  constructor(public nav: NavController, 
+      public navParams: NavParams, 
+      private facebook: Facebook, 
+      private googlePlus: GooglePlus,
+      private nativeStorage: NativeStorage,
+      private apiService: ApiService
+      ) {
     this.facebook.browserInit(this.FB_APP_ID, "v2.8");
   }
 
@@ -28,74 +38,76 @@ export class LoginPage {
     console.log('ionViewDidLoad LoginPage');
   }
 
-  doFacebookLogin(){
+  async doFacebookLogin() {
     let permissions = new Array<string>();
-    let nav = this.navCtrl;
+    let env = this;
     //the permissions your facebook app needs from the user
     permissions = ["public_profile"];
 
 
-    let env = this;
-    this.facebook.login(permissions).then(function(response){
+    this.facebook.login(permissions).then(function (response) {
+
       let userId = response.authResponse.userID;
       let params = new Array<string>();
-      console.log(userId);
 
       //Getting name and gender properties
-      env.facebook.api("/me?fields=name,gender", params).then(function(user) {
-        console.log(user);
-        alert(user);
-        nav.push(HomePage);
+      env.facebook.api("/me?fields=name,gender, email", params).then(function (user) {
+
         user.picture = "https://graph.facebook.com/" + userId + "/picture?type=large";
         //now we have the users info, let's save it in the NativeStorage
-        // NativeStorage.setItem('user',
-        // {
-        //   name: user.name,
-        //   gender: user.gender,
-        //   picture: user.picture
-        // })
-        // .then(function(){
-        //   nav.push(HomePage);
-        // }, function (error) {
-        //   console.log(error);
-        // })
+        env.nativeStorage.setItem('user',
+        {
+          name: user.name,
+          email: user.email,
+          picture: user.picture
+        })
+        .then(
+          () => {
+            env.apiService.sendAuthLogin(user.email, user.name);
+            env.nav.setRoot(HomePage);
+          }, 
+          error => {
+            console.log(error);
+          }
+        );
       })
-    }, function(error){
-    alert(error);
+    }, function (error) {
       console.log(error);
     });
   }
 
-    doGoogleLogin(){
-      let nav = this.navCtrl;
-      // let loading = this.loadingCtrl.create({
-      //   content: 'Please wait...'
-      // });
-      // loading.present();
-      this.googlePlus.login({
-        'scopes': '', // optional, space-separated list of scopes, If not included or empty, defaults to `profile` and `email`.
-        'webClientId': '341120691251-2salj69i0q3n1rbcto8r5ba0lf98q5jq.apps.googleusercontent.com', // optional clientId of your Web application from Credentials settings of your project - On Android, this MUST be included to get an idToken. On iOS, it is not required.
-        'offline': true
-      })
+
+
+  doGoogleLogin() {
+    let nav = this.nav;
+    let env = this;
+    // let loading = this.loadingCtrl.create({
+    //   content: 'Please wait...'
+    // });
+    // loading.present();
+    this.googlePlus.login({
+      'scopes': '', // optional, space-separated list of scopes, If not included or empty, defaults to `profile` and `email`.
+      'webClientId': '341120691251-2salj69i0q3n1rbcto8r5ba0lf98q5jq.apps.googleusercontent.com', // optional clientId of your Web application from Credentials settings of your project - On Android, this MUST be included to get an idToken. On iOS, it is not required.
+      'offline': true
+    })
       .then(function (user) {
-        alert(user);
-        nav.push(HomePage);
         // loading.dismiss();
 
-        // // NativeStorage.setItem('user', {
-        // //   name: user.displayName,
-        // //   email: user.email,
-        // //   picture: user.imageUrl
-        // // })
-        // .then(function(){
-        //   nav.push(UserPage);
-        // }, function (error) {
-        //   console.log(error);
-        // })
+        env.nativeStorage.setItem('user', {
+          name: user.displayName,
+          email: user.email,
+          picture: user.imageUrl
+        })
+        .then(function(){
+          env.apiService.sendAuthLogin(user.email, user.name);
+          nav.setRoot(HomePage);
+        }, function (error) {
+          console.log(error);
+        })
       }, function (error) {
         alert(error);
         console.log(error);
         // loading.dismiss();
       });
-    }
+  }
 }

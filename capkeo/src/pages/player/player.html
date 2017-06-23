@@ -1,0 +1,31 @@
+<!--
+  Generated template for the PlayerPage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>CTTD</ion-title>
+    <ion-buttons end>
+        <button ion-button icon-only color="royal" (click)="openFilterModal()">
+          <ion-icon name="settings"></ion-icon>
+        </button>
+      </ion-buttons>
+  </ion-navbar>
+</ion-header>
+<ion-content padding>
+  <ion-list>
+    <ion-card *ngFor="let item of items" (click)="openDetailModal({player: item})">
+      <ion-card-header>
+        {{ item.name }}
+      </ion-card-header>
+      <ion-card-content>
+        A {{ item.position }} is looking for a team at {{item.district}}!
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+</ion-content>
