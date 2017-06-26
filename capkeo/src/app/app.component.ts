@@ -6,7 +6,10 @@ import { Push, PushObject, PushOptions } from "@ionic-native/push";
 import { NativeStorage } from '@ionic-native/native-storage';
 
 import { LoginPage } from '../pages/login/login';
-import { PlayerPage } from '../pages/player/player';
+import { FindingTeamPage } from '../pages/finding-team/finding-team';
+import { FindingPlayerPage } from '../pages/finding-player/finding-player';
+import { FindingMatchPage } from '../pages/finding-match/finding-match';
+import { FindingStadiumPage } from '../pages/finding-stadium/finding-stadium';
 import { ListPage } from '../pages/list/list';
 import { NotificationPage } from '../pages/notification/notification';
 
@@ -39,9 +42,10 @@ export class MyApp {
     this.pages = [
       { title: 'Thong Bao', component: NotificationPage },
       { title: 'Doi Bong Cua Toi', component: ListPage },
-      { title: 'CTTD', component: PlayerPage },
-      { title: 'Tim Keo', component: ListPage },
-      { title: 'Tim San', component: ListPage },
+      { title: 'Tim Doi', component: FindingTeamPage },
+      { title: 'Tim Cau Thu', component: FindingPlayerPage },
+      { title: 'Tim Keo', component: FindingMatchPage },
+      { title: 'Tim San', component: FindingStadiumPage },
     ];
 
   }
@@ -58,7 +62,7 @@ export class MyApp {
       // Here we will check if the user is already logged in
       // because we don't want to ask users to log in each time they open the app
       env.nativeStorage.remove('user');
-      env.nav.setRoot(PlayerPage);
+      env.nav.setRoot(FindingTeamPage);
 
       // env.nativeStorage.getItem('user')
       //   .then( function (data) {

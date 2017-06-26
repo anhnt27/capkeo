@@ -11,7 +11,10 @@ import { MyApp } from './app.component';
 import { LoginPage } from '../pages/login/login';
 import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
-import { PlayerPage, ModalPlayerDetail, ModalFilterPlayer } from '../pages/player/player';
+import { FindingTeamPage, ModalPlayerDetail, ModalFilterPlayer } from '../pages/finding-team/finding-team';
+import { FindingPlayerPage, ModalTeamDetail, ModalFilterTeam } from '../pages/finding-player/finding-player';
+import { FindingMatchPage, ModalMatchDetail, ModalFilterMatch } from '../pages/finding-match/finding-match';
+import { FindingStadiumPage, ModalStadiumDetail } from '../pages/finding-stadium/finding-stadium';
 import { NotificationPage } from '../pages/notification/notification';
 
 import { StatusBar } from '@ionic-native/status-bar';
@@ -25,10 +28,23 @@ import { ApiService } from '../providers/api-service/api-service';
     LoginPage,
     HomePage,
     ListPage,
-    PlayerPage,
+    NotificationPage,
+    
+    FindingTeamPage,
     ModalPlayerDetail,
     ModalFilterPlayer,
-    NotificationPage
+
+    FindingPlayerPage,
+    ModalTeamDetail,
+    ModalFilterTeam,
+
+    FindingMatchPage,
+    ModalMatchDetail,
+    ModalFilterMatch,
+
+    FindingStadiumPage,
+    ModalStadiumDetail,
+
   ],
   imports: [
     BrowserModule,
@@ -41,10 +57,23 @@ import { ApiService } from '../providers/api-service/api-service';
     LoginPage,
     HomePage,
     ListPage,
-    PlayerPage,
+    NotificationPage,
+
+    FindingTeamPage,
     ModalPlayerDetail,
     ModalFilterPlayer,
-    NotificationPage
+    
+    FindingPlayerPage,
+    ModalTeamDetail,
+    ModalFilterTeam,
+
+    FindingMatchPage,
+    ModalMatchDetail,
+    ModalFilterMatch,
+
+    FindingStadiumPage,
+    ModalStadiumDetail,
+
   ],
   providers: [
     StatusBar,

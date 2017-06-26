@@ -1,5 +1,5 @@
 <!--
-  Generated template for the PlayerPage page.
+  Generated template for the FindingPlayerPage page.
 
   See http://ionicframework.com/docs/components/#navigation for more info on
   Ionic pages and navigation.
@@ -9,7 +9,7 @@
     <button ion-button menuToggle color="primary">
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>CTTD</ion-title>
+    <ion-title>Tim Cau Thu</ion-title>
     <ion-buttons end>
         <button ion-button icon-only color="royal" (click)="openFilterModal()">
           <ion-icon name="settings" color="primary"></ion-icon>
@@ -19,12 +19,12 @@
 </ion-header>
 <ion-content padding>
   <ion-list>
-    <ion-card *ngFor="let item of items" (click)="openDetailModal({player: item})">
+    <ion-card *ngFor="let item of items" (click)="openDetailModal({team: item})">
       <ion-card-header>
         {{ item.name }}
       </ion-card-header>
       <ion-card-content>
-        A {{ item.position }} is looking for a team at {{item.district}}!
+        Team {{ item.name }} is looking for a {{item.position}} at {{item.district}}!
       </ion-card-content>
     </ion-card>
   </ion-list>
