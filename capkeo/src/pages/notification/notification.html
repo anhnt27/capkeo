@@ -6,37 +6,24 @@
 -->
 <ion-header>
 
-  <ion-navbar>
-    <button ion-button menuToggle color="primary">
+  <ion-navbar color="primary">
+    <button ion-button menuToggle color="dark">
       <ion-icon name="menu"></ion-icon>
     </button>
     <ion-title>Notification</ion-title>
+    <ion-buttons end>
+      <button ion-button icon-only (click)="setting()">
+        <ion-icon name="settings" color="dark"></ion-icon>
+      </button>
+    </ion-buttons>
   </ion-navbar>
-
 </ion-header>
-
 
 <ion-content padding>
   <ion-list>
-    <ion-item>
-      <ion-label>tim doi</ion-label>
-      <ion-toggle checked="false"></ion-toggle>
-    </ion-item>  
-    <ion-item>
-      <ion-label>tim cau thu</ion-label>
-      <ion-toggle checked="false"></ion-toggle>
-    </ion-item>
-    <ion-item>
-      <ion-label>tim keo</ion-label>
-      <ion-toggle checked="false"></ion-toggle>
-    </ion-item>
-  </ion-list>
-  <ion-list>
-    <ion-card *ngFor="let item of items">
-      <ion-card-header>
-      </ion-card-header>
+    <ion-card *ngFor="let notification of notifications" (click)="navigateToDetail(notification)">
       <ion-card-content>
-        {{item}}
+        {{notification.data.template}}
       </ion-card-content>
     </ion-card>
   </ion-list>

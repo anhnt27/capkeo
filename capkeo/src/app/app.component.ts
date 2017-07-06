@@ -1,25 +1,27 @@
 import { Component, ViewChild } from '@angular/core';
-import { Nav, Platform, AlertController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
-import { Push, PushObject, PushOptions } from "@ionic-native/push";
 import { NativeStorage } from '@ionic-native/native-storage';
+import { Nav, Platform, AlertController } from 'ionic-angular';
+import { Push, PushObject, PushOptions } from "@ionic-native/push";
 
-import { LoginPage } from '../pages/login/login';
-import { FindingTeamPage } from '../pages/finding-team/finding-team';
-import { FindingPlayerPage } from '../pages/finding-player/finding-player';
-import { FindingMatchPage } from '../pages/finding-match/finding-match';
-import { FindingStadiumPage } from '../pages/finding-stadium/finding-stadium';
+//Pages
 import { ListPage } from '../pages/list/list';
+import { LoginPage } from '../pages/login/login';
+import { SettingPage } from '../pages/setting/setting';
+import { FindingTeamPage } from '../pages/finding-team/finding-team';
 import { NotificationPage } from '../pages/notification/notification';
+import { FindingMatchPage } from '../pages/finding-match/finding-match';
+import { FindingPlayerPage } from '../pages/finding-player/finding-player';
+import { FindingStadiumPage } from '../pages/finding-stadium/finding-stadium';
 
-import { PeopleService } from '../providers/people-service/people-service';
+//Services
 import { ApiService } from '../providers/api-service/api-service';
 
 
 @Component({
   templateUrl: 'app.html',
-  providers: [PeopleService, ApiService]
+  providers: [ApiService]
 })
 export class MyApp {
   @ViewChild(Nav) nav: Nav;
@@ -28,11 +30,15 @@ export class MyApp {
 
   pages: Array<{ title: string, component: any }>;
 
-  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, public push: Push,
-    public alertCtrl: AlertController,
-    public peopleService: PeopleService,
+  constructor(
+    public push: Push,
+    public platform: Platform, 
+    public statusBar: StatusBar, 
     public apiService: ApiService,
-    private nativeStorage: NativeStorage) {
+    public alertCtrl: AlertController,
+    public splashScreen: SplashScreen, 
+    private nativeStorage: NativeStorage
+  ) {
 
     // this.apiService.sendAuthLogin('anhnt.uit.is@gmail.com', 'Anh');
     // this.apiService.sendRegistrationId('anhnt.uit.is@gmail.com', 'zzyy regist ');
@@ -42,10 +48,11 @@ export class MyApp {
     this.pages = [
       { title: 'Thong Bao', component: NotificationPage },
       { title: 'Doi Bong Cua Toi', component: ListPage },
-      { title: 'Tim Doi', component: FindingTeamPage },
-      { title: 'Tim Cau Thu', component: FindingPlayerPage },
+      { title: 'CTTD', component: FindingTeamPage },
+      { title: 'Tim cau thu', component: FindingPlayerPage },
       { title: 'Tim Keo', component: FindingMatchPage },
       { title: 'Tim San', component: FindingStadiumPage },
+      { title: 'Cai Dat', component: SettingPage },
     ];
 
   }
@@ -61,20 +68,26 @@ export class MyApp {
 
       // Here we will check if the user is already logged in
       // because we don't want to ask users to log in each time they open the app
-      env.nativeStorage.remove('user');
-      env.nav.setRoot(FindingTeamPage);
+      // --- just for development
+      // env.nativeStorage.remove('user');
 
-      // env.nativeStorage.getItem('user')
-      //   .then( function (data) {
-      //     // user is previously logged and we have his data
-      //     // we will let him access the app
-      //     env.nav.setRoot(HomePage);
-      //     env.splashScreen.hide();
-      //   }, function (error) {
-      //     //we don't have the user data so we will ask him to log in
-      //     env.nav.setRoot(LoginPage);
-      //     env.splashScreen.hide();
-      // });
+      let test = false;
+       test = true; 
+      if(test) {
+        env.nav.setRoot(FindingMatchPage);
+      } else {
+        env.nativeStorage.getItem('user')
+          .then( function (data) {
+            // user is previously logged and we have his data
+            // we will let him access the app
+            env.nav.setRoot(NotificationPage);
+            env.splashScreen.hide();
+          }, function (error) {
+            //we don't have the user data so we will ask him to log in
+            env.nav.setRoot(LoginPage);
+            env.splashScreen.hide();
+        });
+      }
 
       env.statusBar.styleDefault();
     });
@@ -93,7 +106,9 @@ export class MyApp {
     }
     const options: PushOptions = {
       android: {
-        senderID: "546727817471"
+        senderID: "546727817471",
+        icon : "ic_stat_beach_access",
+        iconColor: "red"
       },
       ios: {
         alert: "true",
@@ -112,35 +127,30 @@ export class MyApp {
         () => console.log('Stored item!'),
         error => console.error('Error storing item', error)
         );
-
-      // let userEmail = '';
-      // this.peopleService.pushRegistrationId(data.registrationId)
-      //   .then(data => {
-      //     // this.people = data;
-      //     // alert( data);
-      //   });
     });
 
     pushObject.on('notification').subscribe((data: any) => {
-      alert('message' + data.message);
       //if user using app and push notification comes
       if (data.additionalData.foreground) {
-        // if application open, show popup
-        let confirmAlert = this.alertCtrl.create({
-          title: 'New Notification',
-          message: data.message,
-          buttons: [{
-            text: 'Ignore',
-            role: 'cancel'
-          }, {
-            text: 'View',
-            handler: () => {
-              //TODO: Your logic here
-              // this.nav.push(DetailsPage, {message: data.message});
-            }
-          }]
-        });
-        confirmAlert.present();
+        // application open, show toast
+        this.apiService.presentToast(data.message);
+
+        // // if application open, show popup
+        // let confirmAlert = this.alertCtrl.create({
+        //   title: 'New Notification',
+        //   message: data.message,
+        //   buttons: [{
+        //     text: 'Ignore',
+        //     role: 'cancel'
+        //   }, {
+        //     text: 'View',
+        //     handler: () => {
+        //       //TODO: Your logic here
+        //       // this.nav.push(DetailsPage, {message: data.message});
+        //     }
+        //   }]
+        // });
+        // confirmAlert.present();
       } else {
         //if user NOT using app and push notification comes
         //TODO: Your logic on click of push notification directly

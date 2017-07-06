@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { Facebook } from '@ionic-native/facebook';
 import { GooglePlus } from '@ionic-native/google-plus';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import { NativeStorage } from '@ionic-native/native-storage';
+import { IonicPage, NavController, NavParams, MenuController } from 'ionic-angular';
 
-import { HomePage } from '../home/home';
+import { NotificationPage } from '../notification/notification';
 
 import { ApiService } from '../../providers/api-service/api-service';
 
@@ -24,16 +24,48 @@ export class LoginPage {
 
   FB_APP_ID: number = 1849240425339924;
 
-  constructor(public nav: NavController, 
-      public navParams: NavParams, 
-      private facebook: Facebook, 
-      private googlePlus: GooglePlus,
-      private nativeStorage: NativeStorage,
-      private apiService: ApiService
+  constructor(
+      public facebook      : Facebook, 
+      public apiService    : ApiService,
+      public navParams     : NavParams, 
+      public googlePlus    : GooglePlus,
+      public nativeStorage : NativeStorage,
+      public nav           : NavController, 
+      public menu          : MenuController,
       ) {
+    // this.menu.swipeEnable(false);
     this.facebook.browserInit(this.FB_APP_ID, "v2.8");
+
+    //handle properties right here
+    this.getData();
   }
 
+  getData() {
+    let env = this;
+    this.apiService.getLocations()
+    .then(data => {
+      env.nativeStorage.setItem('locations', data);
+    }, error => console.log(error)
+    );
+
+    this.apiService.getProperties('position')
+    .then(data => {
+      env.nativeStorage.setItem('positions', data);
+    }, error => console.log(error)
+    );
+
+    this.apiService.getProperties('level')
+    .then(data => {
+      env.nativeStorage.setItem('levels', data);
+    }, error => console.log(error)
+    );
+
+    this.apiService.getAllProperties()
+    .then(data => {
+      env.nativeStorage.setItem('allProperties', data);
+    }, error => console.log(error)
+    );
+  }
   ionViewDidLoad() {
     console.log('ionViewDidLoad LoginPage');
   }
@@ -49,6 +81,7 @@ export class LoginPage {
 
       let userId = response.authResponse.userID;
       let params = new Array<string>();
+      let accessToken = response.authResponse.accessToken;
 
       //Getting name and gender properties
       env.facebook.api("/me?fields=name,gender, email", params).then(function (user) {
@@ -63,18 +96,47 @@ export class LoginPage {
         })
         .then(
           () => {
-            env.apiService.sendAuthLogin(user.email, user.name);
-            env.nav.setRoot(HomePage);
+            env.apiService.sendAuthLogin(user.email, user.name, accessToken).
+            then(data => {
+              let result = <any>{};
+              result = data;
+              if(result.code === 200 ){
+                // sucesss
+                env.nativeStorage.setItem('jwtToken', result.token);
+                // alert('received token' + env.nativeStorage.getItem('jwtToken');
+              }
+            });
           }, 
           error => {
             console.log(error);
           }
         );
+        env.nav.setRoot(NotificationPage);
       })
     }, function (error) {
       console.log(error);
     });
   }
+
+  getUserInfo() {
+    // - after succesfully authenticte with Facebook/Google
+    // check if user exist ? if not: save data.
+    // return token. save token to storage.
+    // redirect to Notification pages.
+
+
+
+    // Notification constructor
+    // load notification first.
+    // load properties data -> save to storage.
+  }
+
+  /* 
+    - how to handle error
+    - display error message.  Or just redirect to error page and display message there. restart application.
+  */
+
+
 
 
 
@@ -99,8 +161,8 @@ export class LoginPage {
           picture: user.imageUrl
         })
         .then(function(){
-          env.apiService.sendAuthLogin(user.email, user.name);
-          nav.setRoot(HomePage);
+          // env.apiService.sendAuthLogin(user.email, user.name);
+          nav.setRoot(NotificationPage);
         }, function (error) {
           console.log(error);
         })

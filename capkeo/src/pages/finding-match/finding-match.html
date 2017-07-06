@@ -18,13 +18,17 @@
   </ion-navbar>
 </ion-header>
 <ion-content padding>
+  <ion-refresher (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content  refreshingSpinner="ios" pullingIcon="arrow-dropdown"></ion-refresher-content>
+  </ion-refresher>
+  <ion-item>
+    <ion-label>Dang tin tim cau thu</ion-label>
+    <ion-icon  item-end (click)="openAddModal({})" name="add-circle"></ion-icon>
+  </ion-item>
   <ion-list>
-    <ion-card *ngFor="let item of items" (click)="openDetailModal({match: item})">
-      <ion-card-header>
-        {{ item.name }}
-      </ion-card-header>
+    <ion-card *ngFor="let findingMatch of findingMatchs" (click)="openDetailModal(findingMatch)">
       <ion-card-content>
-        Team {{ item.name }} is looking for a super match at {{item.district}}!
+      [ Quận {{findingMatch.district_name}}] -- <b> {{findingMatch.player_name}}</b> đang tim keo!
       </ion-card-content>
     </ion-card>
   </ion-list>

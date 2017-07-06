@@ -6,21 +6,26 @@ import { GooglePlus } from '@ionic-native/google-plus';
 import { Push } from "@ionic-native/push";
 import { HttpModule } from '@angular/http';
 import { NativeStorage } from '@ionic-native/native-storage';
+import { CallNumber } from '@ionic-native/call-number';
 
 import { MyApp } from './app.component';
 import { LoginPage } from '../pages/login/login';
 import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
-import { FindingTeamPage, ModalPlayerDetail, ModalFilterPlayer } from '../pages/finding-team/finding-team';
-import { FindingPlayerPage, ModalTeamDetail, ModalFilterTeam } from '../pages/finding-player/finding-player';
-import { FindingMatchPage, ModalMatchDetail, ModalFilterMatch } from '../pages/finding-match/finding-match';
+import { FindingTeamPage, ModalAddFindingTeam, ModalFindingTeamDetail, ModalFilterFindingTeam } from '../pages/finding-team/finding-team';
+import { FindingPlayerPage, ModalFindingPlayerDetail, ModalFilterFindingPlayer, ModalAddFindingPlayer } from '../pages/finding-player/finding-player';
+import { FindingMatchPage, ModalFindingMatchDetail, ModalFilterFindingMatch, ModalAddFindingMatch } from '../pages/finding-match/finding-match';
 import { FindingStadiumPage, ModalStadiumDetail } from '../pages/finding-stadium/finding-stadium';
 import { NotificationPage } from '../pages/notification/notification';
+import { SettingPage, FindingPlayerSettingModal } from '../pages/setting/setting';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { PeopleService } from '../providers/people-service/people-service';
 import { ApiService } from '../providers/api-service/api-service';
+import { HelperService } from '../providers/helper/helper';
+import { FindingPlayerService } from '../providers/finding-player-service/finding-player-service';
+import { ConstantService } from '../providers/constant-service/constant-service';
 
 @NgModule({
   declarations: [
@@ -31,24 +36,33 @@ import { ApiService } from '../providers/api-service/api-service';
     NotificationPage,
     
     FindingTeamPage,
-    ModalPlayerDetail,
-    ModalFilterPlayer,
+    ModalAddFindingTeam,
+    ModalFindingTeamDetail,
+    ModalFilterFindingTeam,
 
     FindingPlayerPage,
-    ModalTeamDetail,
-    ModalFilterTeam,
+    ModalFindingPlayerDetail,
+    ModalFilterFindingPlayer,
+    ModalAddFindingPlayer,
 
     FindingMatchPage,
-    ModalMatchDetail,
-    ModalFilterMatch,
+    ModalFindingMatchDetail,
+    ModalFilterFindingMatch,
+    ModalAddFindingMatch,
 
     FindingStadiumPage,
     ModalStadiumDetail,
 
+    SettingPage,
+    FindingPlayerSettingModal
+
   ],
   imports: [
     BrowserModule,
-    IonicModule.forRoot(MyApp),
+    IonicModule.forRoot(MyApp, {
+        monthNames: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6','Tháng 7' ,'Tháng 8', 'Tháng 9', 'Tháng 10' ,'Tháng 11', 'Tháng 12'],
+        dayNames: ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'],
+    }),
     HttpModule,
   ],
   bootstrap: [IonicApp],
@@ -60,20 +74,25 @@ import { ApiService } from '../providers/api-service/api-service';
     NotificationPage,
 
     FindingTeamPage,
-    ModalPlayerDetail,
-    ModalFilterPlayer,
+    ModalAddFindingTeam,
+    ModalFindingTeamDetail,
+    ModalFilterFindingTeam,
     
     FindingPlayerPage,
-    ModalTeamDetail,
-    ModalFilterTeam,
+    ModalFindingPlayerDetail,
+    ModalFilterFindingPlayer,
+    ModalAddFindingPlayer,
 
     FindingMatchPage,
-    ModalMatchDetail,
-    ModalFilterMatch,
+    ModalFindingMatchDetail,
+    ModalFilterFindingMatch,
+    ModalAddFindingMatch,
 
     FindingStadiumPage,
     ModalStadiumDetail,
-
+    
+    SettingPage,
+    FindingPlayerSettingModal
   ],
   providers: [
     StatusBar,
@@ -82,10 +101,14 @@ import { ApiService } from '../providers/api-service/api-service';
     GooglePlus,
     Push,
     NativeStorage,
+    CallNumber,
 
     PeopleService,
     { provide: ErrorHandler, useClass: IonicErrorHandler },
-    ApiService
+    ApiService,
+    HelperService,
+    FindingPlayerService,
+    ConstantService,
   ]
 })
 export class AppModule { }

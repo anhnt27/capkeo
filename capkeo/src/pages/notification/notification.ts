@@ -1,9 +1,13 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
-
+import { IonicPage, NavController, NavParams, ViewController } from 'ionic-angular';
 import { NativeStorage } from '@ionic-native/native-storage';
 
+import { FindingPlayerPage } from '../finding-player/finding-player';
+import { FindingTeamPage } from '../finding-team/finding-team';
+import { FindingMatchPage } from '../finding-match/finding-match';
+
 import { ApiService } from '../../providers/api-service/api-service';
+import { ConstantService } from '../../providers/constant-service/constant-service';
 /**
  * Generated class for the NotificationPage page.
  *
@@ -17,19 +21,65 @@ import { ApiService } from '../../providers/api-service/api-service';
   providers: [ApiService]
 })
 export class NotificationPage {
-
+  notifications: any;
   email: string;
   registrationId: string;
+  jwtToken: string;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, private nativeStorage: NativeStorage, private apiService: ApiService) {
-    // this.sendRegistrationId();
+  typeFindingPlayer: number;
+  typeFindingMatch: number;
+  typeFindingTeam: number;
+
+  constructor(
+    public navParams: NavParams, 
+    public apiService: ApiService,
+    public navCtrl: NavController, 
+    public nativeStorage: NativeStorage, 
+    public constantService: ConstantService,
+  ) {
+    this.typeFindingPlayer = 1;
+    this.typeFindingTeam   = 2;
+    this.typeFindingMatch  = 3;
+
+    this.sendRegistrationId();
+    this.getNotifications();
+
   }
 
-  items = [
-    'A is looking for a match at District 12',
-    'B is looking for a team at District 12',
-    'C is looking for players at District 12',
-  ];
+  async navigateToDetail(notification) 
+  {
+    switch(notification.data.params.type) 
+    {
+      case this.typeFindingPlayer:
+        this.apiService.getFindingPlayerById(notification.data.params.id)
+        .then(data => {
+          this.navCtrl.setRoot(FindingPlayerPage, {findingPlayer: data});
+        }, error => console.log(error));
+        break;
+      case this.typeFindingTeam:
+        this.apiService.getFindingTeamById(notification.data.params.id)
+        .then(data => {
+          this.navCtrl.setRoot(FindingTeamPage, {findingTeam: data});
+        }, error => console.log(error));
+        break;
+      case this.typeFindingMatch:
+        this.apiService.getFindingMatchById(notification.data.params.id)
+        .then(data => {
+          this.navCtrl.setRoot(FindingMatchPage, {findingMatch: data});
+        }, error => console.log(error));
+        break;
+    }
+  }
+
+  getNotifications() {
+    this.apiService.getNotifications().
+    then(data => {
+      console.log(data);
+      this.notifications = data;
+    },
+    error => console.log(error)
+    );
+  }
 
   async sendRegistrationId() {
     let env = this;
@@ -47,13 +97,13 @@ export class NotificationPage {
       },
       error => console.error(error)
       );
-
-    // await this.apiService.sendAuthLogin(this.email, this.registrationId);
     await this.apiService.sendRegistrationId(this.email, this.registrationId);
-
   }
+
   ionViewDidLoad() {
     console.log('ionViewDidLoad NotificationPage');
   }
 
 }
+
+
