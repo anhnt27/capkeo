@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
+import { CallNumber } from '@ionic-native/call-number';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
-import { Platform, ModalController, ViewController } from 'ionic-angular';
+import { Platform, ModalController, ViewController, LoadingController } from 'ionic-angular';
+
+import { ApiService } from '../../providers/api-service/api-service';
 
 /**
  * Generated class for the FindingStadiumPage page.
@@ -12,25 +15,93 @@ import { Platform, ModalController, ViewController } from 'ionic-angular';
 @Component({
   selector: 'page-finding-stadium',
   templateUrl: 'finding-stadium.html',
+  providers: [ApiService]
 })
 export class FindingStadiumPage {
+  stadiums: any;
+  cities: any;
+  districts: any;
+  districtsByCity: any;
+  
+  selectedCity: any;
+  selectedDistrict: any;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public modalCtrl: ModalController) {
+  loading: any;
+
+  constructor(
+    public platform   : Platform, 
+    public navParams  : NavParams, 
+    public apiService : ApiService, 
+    public navCtrl    : NavController, 
+    public modalCtrl  : ModalController,
+    public loadingCtrl: LoadingController, 
+  )
+  {
+    this.createLoading();
   }
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad FindingStatiumPage');
+  async ionViewDidLoad() 
+  {
+    this.loading.present();
+    let filterData = this.apiService.getDefaultFilter();
+    this.selectedCity = filterData.cityId;
+
+    await this.getLocations();
+    await this.updateDistrict();
+    this.selectedDistrict = filterData.districtIds;
+
+    await this.getFindingStadiums();
+    setTimeout(() => {
+      this.loading.dismiss();
+    }, 5000);
   }
-  openDetailModal(stadium) {
-    let modal = this.modalCtrl.create(ModalStadiumDetail, stadium);
+  
+  createLoading() 
+  {
+    this.loading = this.loadingCtrl.create({
+      spinner: 'ios',
+      dismissOnPageChange: false,
+    });
+  }
+
+  updateDistrict() 
+  {
+    if(this.selectedCity) {
+      this.districts = this.districtsByCity[this.selectedCity].districts;
+    }
+  }
+  updateStadium()
+  {
+    this.createLoading();
+    this.loading.present();
+    this.getFindingStadiums();
+    setTimeout(() => {
+      this.loading.dismiss();
+    }, 5000);
+  }
+
+  async getFindingStadiums()
+  {
+    await this.apiService.getFindingStadiums(this.selectedDistrict).
+    then(data => {
+      console.log(data);
+      this.stadiums = data;
+    });
+  }
+  async getLocations() 
+  {
+    await this.apiService.getLocations()
+    .then(data => {
+      this.cities = data['results']['cities'];
+      this.districtsByCity  = data['results']['districts_by_city'];
+    });
+  }
+
+  openDetailModal(stadium) 
+  {
+    let modal = this.modalCtrl.create(ModalStadiumDetail, {stadium: stadium});
     modal.present();
   }
-
-  items = [
-    { name: 'Quyet Tam 2', district: 'Go Vap', phone_number: '0974796654', address: '34 Nguyễn Văn Lượng, 16, Gò Vấp, Hồ Chí Minh' },
-    { name: '152', district: 'Go Vap', phone_number: '0909792841', address: '152 Nguyễn Oanh, 17, Gò Vấp, Hồ Chí Minh' },
-  ];
-
 }
 
 @Component({
@@ -75,7 +146,7 @@ export class FindingStadiumPage {
           </ion-col>
           <ion-col col-2>
             <ion-label stacked></ion-label>
-            <button ion-button icon-only color="royal" small>
+            <button ion-button icon-only color="royal" (click)="call()" small>
               <ion-icon name="call"></ion-icon>
             </button>
           </ion-col>
@@ -90,27 +161,23 @@ export class ModalStadiumDetail {
   cities;
 
   constructor(
-    public platform: Platform,
     public params: NavParams,
+    public callNumber: CallNumber,
     public viewCtrl: ViewController
-  ) {
+  ) 
+  {
     this.stadium = this.params.get('stadium');
-    this.cities = [
-      {id: 1, name: 'TP HCM'},
-      {id: 2, name: 'Ha Noi'},
-      {id: 3, name: 'Da Nang'},
-    ];
-    this.districts = [
-      {id: 1, name: 'Quan 1'},
-      {id: 2, name: 'Quan 2'},
-      {id: 3, name: 'Quan 3'},
-      {id: 4, name: 'Quan 4'},
-      {id: 5, name: 'Quan 5'},
-      {id: 6, name: 'Quan 6'},
-    ];
   }
 
-  dismiss() {
+  dismiss() 
+  {
     this.viewCtrl.dismiss();
+  }
+
+  call()
+  {
+    this.callNumber.callNumber("0974796654", true)
+      .then(() => console.log('Launched dialer!'))
+      .catch(() => console.log('Error launching dialer'));
   }
 }

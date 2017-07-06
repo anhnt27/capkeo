@@ -13,27 +13,24 @@
   </ion-navbar>
 </ion-header>
 <ion-content padding>   
-    <ion-list>
-        <ion-item>
-          <ion-label>Thanh Phone</ion-label>
-          <ion-select [(ngModel)]="toppings" multiple="true" cancelText="Nah" okText="Okay!">
-            <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-          <ion-label>Quan/Huyen</ion-label>
-          <ion-select [(ngModel)]="toppings" multiple="true" cancelText="Nah" okText="Okay!">
-            <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
-          </ion-select>
-        </ion-item>
-      </ion-list>
   <ion-list>
-    <ion-card *ngFor="let item of items" (click)="openDetailModal({stadium: item})">
-      <ion-card-header>
-        {{ item.name }}
-      </ion-card-header>
+    <ion-item>
+      <ion-label>Thành Phố</ion-label>
+      <ion-select [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
+        <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label>Quận/Huyện</ion-label>
+      <ion-select [(ngModel)]="selectedDistrict" (ngModelChange)="updateStadium()">
+        <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+  <ion-list>
+    <ion-card *ngFor="let stadium of stadiums" (click)="openDetailModal(stadium)">
       <ion-card-content>
-        Stadium {{item.name }} located at {{item.district}}! Call now: {{item.phone_number}}!
+      <b> [{{stadium.name}}]</b> -- {{stadium.address}}
       </ion-card-content>
     </ion-card>
   </ion-list>

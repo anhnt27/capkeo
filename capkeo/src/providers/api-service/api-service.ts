@@ -172,7 +172,17 @@ export class ApiService {
     let segment = 'get-finding-match/' + id;
     return this.callGetApi(segment);
   }
-  //
+
+  //finding stadium
+  getFindingStadiums(district) {
+    console.log('calling get finding Stadium', district);
+    if(!district) {
+      district = '0';
+    }
+
+    let segment = 'get-stadium-by-district/' + district;
+    return this.callGetApi(segment);
+  }
 
   getJwtToken() {
   }

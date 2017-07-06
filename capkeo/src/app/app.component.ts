@@ -14,6 +14,7 @@ import { NotificationPage } from '../pages/notification/notification';
 import { FindingMatchPage } from '../pages/finding-match/finding-match';
 import { FindingPlayerPage } from '../pages/finding-player/finding-player';
 import { FindingStadiumPage } from '../pages/finding-stadium/finding-stadium';
+import { TeamPage } from '../pages/team/team';
 
 //Services
 import { ApiService } from '../providers/api-service/api-service';
@@ -47,7 +48,7 @@ export class MyApp {
     // used for an example of ngFor and navigation
     this.pages = [
       { title: 'Thong Bao', component: NotificationPage },
-      { title: 'Doi Bong Cua Toi', component: ListPage },
+      { title: 'Doi Bong Cua Toi', component: TeamPage },
       { title: 'CTTD', component: FindingTeamPage },
       { title: 'Tim cau thu', component: FindingPlayerPage },
       { title: 'Tim Keo', component: FindingMatchPage },
@@ -74,7 +75,7 @@ export class MyApp {
       let test = false;
        test = true; 
       if(test) {
-        env.nav.setRoot(FindingMatchPage);
+        env.nav.setRoot(TeamPage);
       } else {
         env.nativeStorage.getItem('user')
           .then( function (data) {

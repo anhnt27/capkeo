@@ -3,7 +3,7 @@ import { CallNumber } from '@ionic-native/call-number';
 import { NativeStorage } from '@ionic-native/native-storage';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
-import { Platform, ModalController, ViewController, AlertController, LoadingController } from 'ionic-angular';
+import { Platform, ModalController, ViewController, LoadingController } from 'ionic-angular';
 
 import { ApiService } from '../../providers/api-service/api-service';
 
@@ -294,10 +294,9 @@ export class ModalFindingMatchDetail {
   }
   call()
   {
-    alert('calling....');
     this.callNumber.callNumber("0974796654", true)
       .then(() => console.log('Launched dialer!'))
-      .catch(() => alert('Error launching dialer'));
+      .catch(() => console.log('Error launching dialer'));
   }
 }
 
