@@ -11,8 +11,7 @@ import { CallNumber } from '@ionic-native/call-number';
 import { MyApp } from './app.component';
 import { LoginPage } from '../pages/login/login';
 import { HomePage } from '../pages/home/home';
-import { ListPage } from '../pages/list/list';
-import { TeamPage, TabTeamInformationPage, TabTeamMatchPage, TabTeamFundPage } from '../pages/team/team';
+import { TeamPage, TabTeamInformationPage, TabTeamMatchPage, TabTeamFundPage, ModalAddTeam } from '../pages/team/team';
 import { FindingTeamPage, ModalAddFindingTeam, ModalFindingTeamDetail, ModalFilterFindingTeam } from '../pages/finding-team/finding-team';
 import { FindingPlayerPage, ModalFindingPlayerDetail, ModalFilterFindingPlayer, ModalAddFindingPlayer } from '../pages/finding-player/finding-player';
 import { FindingMatchPage, ModalFindingMatchDetail, ModalFilterFindingMatch, ModalAddFindingMatch } from '../pages/finding-match/finding-match';
@@ -33,7 +32,6 @@ import { ConstantService } from '../providers/constant-service/constant-service'
     MyApp,
     LoginPage,
     HomePage,
-    ListPage,
     NotificationPage,
     
     FindingTeamPage,
@@ -58,6 +56,7 @@ import { ConstantService } from '../providers/constant-service/constant-service'
     TabTeamInformationPage,
     TabTeamMatchPage,
     TabTeamFundPage,
+    ModalAddTeam,
 
 
     SettingPage,
@@ -77,7 +76,6 @@ import { ConstantService } from '../providers/constant-service/constant-service'
     MyApp,
     LoginPage,
     HomePage,
-    ListPage,
     NotificationPage,
 
     FindingTeamPage,
@@ -102,6 +100,7 @@ import { ConstantService } from '../providers/constant-service/constant-service'
     TabTeamInformationPage,
     TabTeamMatchPage,
     TabTeamFundPage,
+    ModalAddTeam,
 
     
     SettingPage,

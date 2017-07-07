@@ -3,7 +3,7 @@ import { CallNumber } from '@ionic-native/call-number';
 import { NativeStorage } from '@ionic-native/native-storage';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
-import { Platform, ModalController, ViewController, LoadingController } from 'ionic-angular';
+import { Platform, ModalController, ViewController, PopoverController  } from 'ionic-angular';
 
 import { ApiService } from '../../providers/api-service/api-service';
 /**
@@ -34,7 +34,6 @@ export class FindingPlayerPage {
 
   filterData: any;
   defaultFilterData: any;
-  loading: any;
 
   constructor(
     public platform: Platform, 
@@ -43,7 +42,7 @@ export class FindingPlayerPage {
     public navCtrl: NavController, 
     public modalCtrl: ModalController, 
     public nativeStorage: NativeStorage,
-    public loadingCtrl: LoadingController, 
+    public popoverCtrl: PopoverController ,
     ) 
   {
     /* load data right here:
@@ -52,13 +51,6 @@ export class FindingPlayerPage {
     - list of properties data : level / postion
     - 
     */
-
-    
-    this.createLoading();
-    // this.loading = this.loadingCtrl.create({
-    //   spinner: 'ios',
-    //   dismissOnPageChange: true,
-    // });
 
 
     //will be moved to home.
@@ -76,8 +68,8 @@ export class FindingPlayerPage {
   async ionViewDidLoad() 
   {
     //will be moved to home.
-    this.loading.present();
-
+    
+    this.apiService.handleLoading();
     this.filterData = this.apiService.getDefaultFilter();
     this.defaultFilterData = this.apiService.getDefaultFilter();
 
@@ -93,22 +85,15 @@ export class FindingPlayerPage {
     } 
 
     await this.getFindingPlayers();
+    
 
-    this.loading.dismiss();
   }
+
   async doRefresh(refresher)
   {
     console.log('refressing....');
     await this.getFindingPlayers();
     refresher.complete();
-  }
-
-  createLoading() 
-  {
-    this.loading = this.loadingCtrl.create({
-      spinner: 'ios',
-      dismissOnPageChange: false,
-    });
   }
   // get data
   async getFindingPlayers() 
@@ -117,6 +102,8 @@ export class FindingPlayerPage {
     then(data => {
       console.log(data);
       this.findingPlayers = data;
+    }, error => {
+      console.log(error);
     });
   }
 
@@ -180,14 +167,9 @@ export class FindingPlayerPage {
   async openAddModal(){
     let data = {cities: this.cities, districtsByCity: this.districtsByCity, positions: this.positions, levels: this.levels, filterData: this.defaultFilterData};
     let modal = this.modalCtrl.create(ModalAddFindingPlayer, data);
-    modal.onDidDismiss(data => {
+    modal.onDidDismiss((data: any) => {
       if(data) {
-        let result: any = data;
-        if(result.code == 200) {
-          this.apiService.presentToast(this.apiService.addedOkMsg);
-        } else {
-          this.apiService.presentToast(this.apiService.addedOkErr);
-        }
+        this.apiService.handlePostResult(data.code);
       }
       this.getFindingPlayers();
     });
@@ -203,28 +185,21 @@ export class FindingPlayerPage {
   }
 
   openFilterModal() {
-    let env = this;
     let data = {cities: this.cities, districtsByCity: this.districtsByCity, positions: this.positions, levels: this.levels, filterData: this.filterData};
     let modal = this.modalCtrl.create(ModalFilterFindingPlayer, data);
 
     modal.onDidDismiss(data => {
-     // reload findingPlayer with this filter data.
-     // should have default filter at the first loading
       if(data) {
-        this.createLoading();
-        this.loading.present();
+        this.apiService.handleLoading();
+
         this.filterData = {'cityId': data.cityId, 'districtIds': data.districtIds, 'positionIds': data.positionIds, 'levelIds': data.levelIds};
 
         this.apiService.getFindingPlayers(data.districtIds, data.positionIds, data.levelIds).
         then(data => {
           this.findingPlayers = data;
-          this.loading.dismiss();
         }, error => {
           console.log(error);
-          this.loading.dismiss();
         });
-
-
       }
     });
     modal.present();
@@ -234,7 +209,7 @@ export class FindingPlayerPage {
 @Component({
   template: `
     <ion-header>
-      <ion-toolbar>
+      <ion-toolbar color="primary">
         <ion-title>
           Thong Tin Doi
         </ion-title>
@@ -247,80 +222,45 @@ export class FindingPlayerPage {
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-grid>
-        <ion-row>
-          <ion-col col-12>
+      <ion-card>
+        <ion-card-content>
+          <ion-list>
             <ion-item>
-              <ion-label stacked>Ten </ion-label>
-              <ion-input value="{{findingPlayer.player_name}}" readonly="true"></ion-input>
+              <h2>Tên</h2>
+              <p>{{findingPlayer.player_name}}</p>
             </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
             <ion-item>
-              <ion-label>Quan</ion-label>
-              <ion-input value="{{findingPlayer.district_name}}" readonly="true"></ion-input>
+              <h2>Quận</h2>
+              <p>{{findingPlayer.district_name}}</p>
             </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
             <ion-item>
-              <ion-label>San</ion-label>
-              <ion-input value="{{findingPlayer.address}}" readonly="true"></ion-input>
+              <h2>Vị Trí</h2>
+              <p>{{findingPlayer.position_name}}</p>
             </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
             <ion-item>
-              <ion-label>Vi Tri</ion-label>
-              <ion-input value="{{findingPlayer.position_name}}" readonly="true"></ion-input>
+              <h2>Trình độ</h2>
+              <p>{{findingPlayer.level_name}}</p>
             </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
+            <ion-item *ngIf="findingPlayer.address">
+              <h2>Địa chỉ</h2>
+              <p>{{findingPlayer.address}}</p>
+            </ion-item>
+            <ion-item *ngIf="findingPlayer.message">
+              <h2>Lời nhắn</h2>
+              <p>{{findingPlayer.message}}</p>
+            </ion-item>
             <ion-item>
-              <ion-label>Trinh do</ion-label>
-              <ion-input value="{{findingPlayer.level_name}}" readonly="true"></ion-input>
+              <h2>Số Điện Thoại</h2>
+              <p>{{findingPlayer.phone_number}}</p>
+              <ion-icon name="call" item-end (click)="call(findingPlayer.phone_number)" smaill></ion-icon>
             </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
             <ion-item>
-              <ion-label>Loi Nhan</ion-label>
-              <ion-input value="{{findingPlayer.message}}" readonly="true"></ion-input>
+              <h2> Xin gia nhap doi bong </h2>
+              <ion-icon name="person-add" item-end></ion-icon>
             </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-10>
-            <ion-item>
-              <ion-label>Phone</ion-label>
-              <ion-input value="{{findingPlayer.phone_number}}" readonly="true"><ion-icon name="call" ></ion-icon></ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col col-2>
-            <ion-label stacked></ion-label>
-            <button ion-button icon-only color="royal" (click)="call()" small>
-              <ion-icon name="call" ></ion-icon>
-            </button>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
-            <ion-buttons>
-              <button ion-button icon-only color="royal" small>
-                <ion-icon name="person-add"></ion-icon>
-              </button>
-              Xin Vao Doi!
-            </ion-buttons>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
     </ion-content>
   `,
 })
@@ -333,6 +273,7 @@ export class ModalFindingPlayerDetail {
     public params   : NavParams,
     public callNumber: CallNumber,
     public viewCtrl : ViewController,
+    public apiService : ApiService,
   ) {
     this.properties    = this.params.get('properties');
     this.findingPlayer = this.params.get('findingPlayer');
@@ -341,18 +282,19 @@ export class ModalFindingPlayerDetail {
   dismiss() {
     this.viewCtrl.dismiss();
   }
-  call()
+  call(phoneNumber)
   {
-    this.callNumber.callNumber("0974796654", true)
-      .then(() => console.log('Launched dialer!'))
-      .catch(() => console.log('Error launching dialer'));
+    this.apiService.call(phoneNumber);
+    // this.callNumber.callNumber("0974796654", true)
+    //   .then(() => console.log('Launched dialer!'))
+    //   .catch(() => console.log('Error launching dialer'));
   }
 }
 
 @Component({
   template: `
     <ion-header>
-      <ion-toolbar>
+      <ion-toolbar color="primary">
         <ion-title>
           Loc Doi
         </ion-title>
@@ -450,7 +392,7 @@ export class ModalFilterFindingPlayer {
 @Component({
   template: `
     <ion-header>
-      <ion-toolbar>
+      <ion-toolbar color="primary">
         <ion-title>
           Add finding player.
         </ion-title>
@@ -463,54 +405,63 @@ export class ModalFilterFindingPlayer {
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-list>
-        <form [formGroup]="findingPlayerForm" (ngSubmit)="logForm()">
-          <ion-item>
-            <ion-label>Thành Phố</ion-label>
-            <ion-select formControlName="cityId" [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
-              <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label>Quận/Huyện</ion-label>
-            <ion-select formControlName="districtId" >
-              <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label>Vị Trí</ion-label>
-            <ion-select formControlName="positionId" >
-              <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label>Trình</ion-label>
-            <ion-select formControlName="levelId" >
-              <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-input type="number" formControlName="phoneNumber" placeholder="Số Điện Thoại"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label floating>Date</ion-label>
-            <ion-datetime displayFormat="DDDD MMMM/D" pickerFormat="MMMM D"  (min)="currentDate" formControlName="matchDate"></ion-datetime>
-          </ion-item>
-          <ion-item>
-            <ion-input type="text" placeholder="Giờ" formControlName="matchHour"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-input type="number" placeholder="Số Lượng" formControlName="needingNumber"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-input type="text" placeholder="Địa chỉ sân" formControlName="address"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-textarea placeholder="Lời nhắn" formControlName="message"></ion-textarea>
-          </ion-item>
-          <button full ion-button type="submit" [disabled]="!findingPlayerForm.valid">Lưu</button>
-        </form>
-      </ion-list>
+      <ion-card>
+        <ion-card-content>
+          <ion-list>
+            <form [formGroup]="findingPlayerForm" (ngSubmit)="logForm()">
+              <ion-item>
+                <ion-label stacked>Thành Phố</ion-label>
+                <ion-select formControlName="cityId" [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
+                  <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
+                </ion-select>
+              </ion-item>
+              <ion-item>
+                <ion-label stacked>Quận/Huyện</ion-label>
+                <ion-select formControlName="districtId" >
+                  <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
+                </ion-select>
+              </ion-item>
+              <ion-item>
+                <ion-label stacked>Vị Trí</ion-label>
+                <ion-select formControlName="positionId" >
+                  <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
+                </ion-select>
+              </ion-item>
+              <ion-item>
+                <ion-label stacked>Trình</ion-label>
+                <ion-select formControlName="levelId" >
+                  <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
+                </ion-select>
+              </ion-item>
+              <ion-item>
+                <ion-label stacked>Số Điện Thoại</ion-label>
+                <ion-input type="number" formControlName="phoneNumber" placeholder=""></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label stacked>Ngày</ion-label>
+                <ion-datetime displayFormat="DDDD MMMM/D" pickerFormat="MMMM D"  (min)="currentDate" formControlName="matchDate"></ion-datetime>
+              </ion-item>
+              <ion-item>
+                <ion-label stacked>Giờ</ion-label>
+                <ion-input type="text" placeholder="" formControlName="matchHour"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label stacked>Số Lượng</ion-label>
+                <ion-input type="number" placeholder="" formControlName="needingNumber"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label stacked>Địa chỉ sân</ion-label>
+                <ion-input type="text" placeholder="" formControlName="address"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label stacked>Lời nhắn</ion-label>
+                <ion-textarea placeholder="" formControlName="message"></ion-textarea>
+              </ion-item>
+              <button full ion-button type="submit" [disabled]="!findingPlayerForm.valid">Lưu</button>
+            </form>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
     </ion-content>
   `,
 })
@@ -560,12 +511,15 @@ export class ModalAddFindingPlayer {
     // this.findingPlayerForm.group.cityId = this.filterData.cityId;
 
   }
+
   updateDistrict() {
     if(this.selectedCity) {
       this.districts = this.districtsByCity[this.selectedCity].districts;
     }
   }
+
   async logForm() {
+    this.apiService.handleLoading();
     await this.apiService.addFindingPlayer(this.findingPlayerForm.value)
       .then(data => {
         console.log('added data ', data);

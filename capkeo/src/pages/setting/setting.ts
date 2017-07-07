@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { CallNumber } from '@ionic-native/call-number';
 import { NativeStorage } from '@ionic-native/native-storage';
 import { IonicPage, NavController, NavParams, ViewController, ModalController } from 'ionic-angular';
 
@@ -22,9 +21,9 @@ export class SettingPage {
   isReceiveFindingMatch  : boolean;
   isReceiveFindingPlayer : boolean;
 
-  typeFindingPlayer: number;
-  typeFindingMatch: number;
   typeFindingTeam: number;
+  typeFindingMatch: number;
+  typeFindingPlayer: number;
 
   notificationSetting: any;
 
@@ -36,42 +35,90 @@ export class SettingPage {
   properties: any;
   filterData: any;
 
+  player: any;
+
   constructor(
     public navParams: NavParams,
     public apiService: ApiService,
     public navCtrl: NavController, 
-    public callNumber: CallNumber,
     public modalCtrl: ModalController, 
     public nativeStorage : NativeStorage,
     ) 
   {
-    this.isReceiveFindingTeam   = true;
-    this.isReceiveFindingMatch  = true;
-    this.isReceiveFindingPlayer = true;
+    this.typeFindingTeam   = this.apiService.typeFindingTeam;
+    this.typeFindingMatch  = this.apiService.typeFindingMatch;
+    this.typeFindingPlayer = this.apiService.typeFindingPlayer;
+    this.player = {};
+  } 
 
-    this.typeFindingPlayer = 1;
-    this.typeFindingTeam   = 2;
-    this.typeFindingMatch  = 3;
+  async ionViewDidLoad() 
+  {
+    this.apiService.handleLoading();
+    await this.getLocations();
+    await this.getPositions();
+    await this.getLevels();
+    await this.getAllProperties();
 
-
-    this.getLocations();
-    this.getPositions();
-    this.getLevels();
-    this.getAllProperties();
+    await this.getPlayer();
+    await this.updateDistrict();
   }
-  toggleChange(type) {
-    // alert(type);
 
+  async getPlayer()
+  {
+    await this.apiService.getPlayer()
+    .then((data: any) => {
+      this.player = data;
+      this.isReceiveFindingTeam   = data.is_receive_player_finding_team;
+      this.isReceiveFindingMatch  = data.is_receive_team_finding_match;
+      this.isReceiveFindingPlayer = data.is_receive_team_finding_player;
+    }, error =>console.log(error)
+    );
+  }
 
-    // // call api to update is_receive
-    // if(on / open seting) {
+  updateDistrict() 
+  {
+    if(this.player.city_id) {
+      this.districts  = this.districtsByCity[this.player.city_id].districts;
+    }
+  }
 
-    // } 
+  saveProfile()
+  {
+    this.apiService.handleLoading();
+    this.apiService.updatePlayer(this.player)
+    .then((data: any) => {
+      this.apiService.handlePostResult(data.code);
+    }, error => console.log(error));
+  }
+
+  async toggleChange(type) 
+  {
+    switch (type) 
+    {
+      case this.typeFindingTeam:
+        this.player.is_receive_player_finding_team = this.isReceiveFindingTeam;
+        if(this.isReceiveFindingTeam) this.openFindingPlayerSettingModal(type);
+        break;
+      case this.typeFindingMatch:
+        this.player.is_receive_team_finding_match = this.isReceiveFindingMatch;
+        if(this.isReceiveFindingMatch) this.openFindingPlayerSettingModal(type);
+        break;
+      case this.typeFindingPlayer:
+        this.player.is_receive_team_finding_player = this.isReceiveFindingPlayer;
+        if(this.isReceiveFindingPlayer) this.openFindingPlayerSettingModal(type);
+        break;
+    }
+
+    this.apiService.updatePlayer(this.player)
+    .then((data: any) => {
+      this.apiService.handlePostResult(data.code);
+    }, error => console.log(error));
   }
 
   // open filter
   async openFindingPlayerSettingModal(type) {
     // call api to get current setting first.
+    this.apiService.handleLoading();
     let env = this;
     await this.apiService.getNotificationSetting(type)
     .then(data => {
@@ -88,20 +135,21 @@ export class SettingPage {
 
     modal.onDidDismiss(data => {
       if(data) {
+        this.apiService.handleLoading();
         let notificationSetting = data;
         env.apiService.saveNotificationSetting(notificationSetting)
-        .then(data => {
-          console.log(data);
+        .then((data: any) => {
+          console.log('saved notificationSetting', data);
+          env.apiService.handlePostResult(data.code);
         }, error => console.log(error));
       }
     });
     modal.present();
   }
-  call()
+
+  call(phoneNumber)
   {
-    this.callNumber.callNumber("0974796654", true)
-      .then(() => console.log('Launched dialer!'))
-      .catch(() => console.log('Error launching dialer'));
+    this.apiService.call(phoneNumber);
   }
   // get data
   getLocations() {
@@ -163,7 +211,7 @@ export class SettingPage {
 @Component({
   template: `
     <ion-header>
-      <ion-toolbar>
+      <ion-toolbar color="primary">
         <ion-title>
           Loc Doi
         </ion-title>
@@ -176,35 +224,42 @@ export class SettingPage {
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-list>
-        <ion-item>
-          <ion-label>Thành Phố</ion-label>
-          <ion-select [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
-            <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-          <ion-label>Quận/Huyện</ion-label>
-          <ion-select multiple="true" [(ngModel)]="selectedDistricts">
-            <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-          <ion-label>Vị Trí</ion-label>
-          <ion-select multiple="true" [(ngModel)]="selectedPositions" >
-            <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-          <ion-label>Trình</ion-label>
-          <ion-select multiple="true" [(ngModel)]="selectedLevels">
-            <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-            <button ion-button full (click)="save()">Lưu</button>
-        </ion-item>
-      </ion-list>
+      <ion-card>
+        <ion-card-header>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            <ion-item>
+              <ion-label stacked>Thành Phố</ion-label>
+              <ion-select [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
+                <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label stacked>Quận/Huyện</ion-label>
+              <ion-select multiple="true" [(ngModel)]="selectedDistricts">
+                <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item *ngIf="type !== this.apiService.typeFindingMatch">
+              <ion-label stacked>Vị Trí</ion-label>
+              <ion-select multiple="true" [(ngModel)]="selectedPositions" >
+                <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label stacked>Trình</ion-label>
+              <ion-select multiple="true" [(ngModel)]="selectedLevels">
+                <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+                <button ion-button full (click)="save()">Lưu</button>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+
     </ion-content>
   `,
 })
@@ -225,10 +280,10 @@ export class FindingPlayerSettingModal {
   filterData: any;
 
   type: number;
-  
 
   constructor(
     public params: NavParams,
+    public apiService: ApiService,
     public viewCtrl: ViewController,
   ) {
     this.currentDate     = new Date().toISOString();

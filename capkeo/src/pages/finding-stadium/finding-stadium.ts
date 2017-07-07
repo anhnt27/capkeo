@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
-import { CallNumber } from '@ionic-native/call-number';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
-import { Platform, ModalController, ViewController, LoadingController } from 'ionic-angular';
+import { Platform, ModalController, ViewController } from 'ionic-angular';
 
 import { ApiService } from '../../providers/api-service/api-service';
 
@@ -26,43 +25,28 @@ export class FindingStadiumPage {
   selectedCity: any;
   selectedDistrict: any;
 
-  loading: any;
-
   constructor(
     public platform   : Platform, 
     public navParams  : NavParams, 
     public apiService : ApiService, 
     public navCtrl    : NavController, 
     public modalCtrl  : ModalController,
-    public loadingCtrl: LoadingController, 
   )
   {
-    this.createLoading();
   }
 
   async ionViewDidLoad() 
   {
-    this.loading.present();
+    this.apiService.handleLoading();
     let filterData = this.apiService.getDefaultFilter();
     this.selectedCity = filterData.cityId;
 
     await this.getLocations();
     await this.updateDistrict();
     this.selectedDistrict = filterData.districtIds;
-
     await this.getFindingStadiums();
-    setTimeout(() => {
-      this.loading.dismiss();
-    }, 5000);
   }
   
-  createLoading() 
-  {
-    this.loading = this.loadingCtrl.create({
-      spinner: 'ios',
-      dismissOnPageChange: false,
-    });
-  }
 
   updateDistrict() 
   {
@@ -72,12 +56,8 @@ export class FindingStadiumPage {
   }
   updateStadium()
   {
-    this.createLoading();
-    this.loading.present();
+    this.apiService.handleLoading();
     this.getFindingStadiums();
-    setTimeout(() => {
-      this.loading.dismiss();
-    }, 5000);
   }
 
   async getFindingStadiums()
@@ -107,7 +87,7 @@ export class FindingStadiumPage {
 @Component({
   template: `
     <ion-header>
-      <ion-toolbar>
+      <ion-toolbar color="primary">
         <ion-title>
           Thong Tin San
         </ion-title>
@@ -120,38 +100,27 @@ export class FindingStadiumPage {
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-grid>
-        <ion-row>
-          <ion-col col-12>
+      <ion-card>
+        <ion-card-header>  
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
             <ion-item>
-              <ion-label stacked>Ten</ion-label>
-              <ion-input value="{{stadium.name}}" readonly="true"></ion-input>
+              <h2>Tên</h2>
+              <p>{{stadium.name}}</p>
             </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
             <ion-item>
-              <ion-label stacked>Dia Chi</ion-label>
-              <ion-input value="{{stadium.address}}" readonly="true"></ion-input>
+              <h2>Địa Chỉ</h2>
+              <p>{{stadium.address}}</p>
             </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-10>
             <ion-item>
-              <ion-label stacked>Phone</ion-label>
-              <ion-input value="{{stadium.phone_number}}" readonly="true"><ion-icon name="call"></ion-icon></ion-input>
+              <h2>SĐT</h2>
+              <p>{{stadium.phone_number}}</p>
+              <ion-icon item-end name="call" (click)="call(stadium.phone_number)"></ion-icon>
             </ion-item>
-          </ion-col>
-          <ion-col col-2>
-            <ion-label stacked></ion-label>
-            <button ion-button icon-only color="royal" (click)="call()" small>
-              <ion-icon name="call"></ion-icon>
-            </button>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
     </ion-content>
   `,
 })
@@ -162,8 +131,8 @@ export class ModalStadiumDetail {
 
   constructor(
     public params: NavParams,
-    public callNumber: CallNumber,
-    public viewCtrl: ViewController
+    public apiService: ApiService,
+    public viewCtrl: ViewController,
   ) 
   {
     this.stadium = this.params.get('stadium');
@@ -174,10 +143,8 @@ export class ModalStadiumDetail {
     this.viewCtrl.dismiss();
   }
 
-  call()
+  call(phoneNumber)
   {
-    this.callNumber.callNumber("0974796654", true)
-      .then(() => console.log('Launched dialer!'))
-      .catch(() => console.log('Error launching dialer'));
+    this.apiService.call(phoneNumber);
   }
 }

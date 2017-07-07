@@ -6,7 +6,6 @@ import { Nav, Platform, AlertController } from 'ionic-angular';
 import { Push, PushObject, PushOptions } from "@ionic-native/push";
 
 //Pages
-import { ListPage } from '../pages/list/list';
 import { LoginPage } from '../pages/login/login';
 import { SettingPage } from '../pages/setting/setting';
 import { FindingTeamPage } from '../pages/finding-team/finding-team';
@@ -70,17 +69,26 @@ export class MyApp {
       // Here we will check if the user is already logged in
       // because we don't want to ask users to log in each time they open the app
       // --- just for development
-      // env.nativeStorage.remove('user');
+      env.nativeStorage.remove('user');
 
-      let test = false;
-       test = true; 
-      if(test) {
+      if(this.apiService.isTesting) {
         env.nav.setRoot(TeamPage);
       } else {
         env.nativeStorage.getItem('user')
           .then( function (data) {
             // user is previously logged and we have his data
             // we will let him access the app
+            env.apiService.sendAuthLogin(data.email, data.name, data.accessToken).
+            then((data: any) => {
+              let result = <any>{};
+              result = data;
+              if(result.code === 200 ){
+                // sucesss
+                env.nativeStorage.setItem('jwtToken', result.token);
+                // alert('received token' + env.nativeStorage.getItem('jwtToken');
+              }
+            });
+
             env.nav.setRoot(NotificationPage);
             env.splashScreen.hide();
           }, function (error) {

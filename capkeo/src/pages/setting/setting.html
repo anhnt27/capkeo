@@ -11,31 +11,74 @@
     </button>
     <ion-title>Cai dat</ion-title>
     <ion-buttons end>
-      <button ion-button icon-only (click)="call()">
+      <button ion-button icon-only (click)="call(123456789)">
         <ion-icon name="crop" color="dark"></ion-icon>
       </button>
     </ion-buttons>
   </ion-navbar>
 </ion-header>
 <ion-content padding>
-  <ion-list>
-    <ion-list-header>
-      Thong bao
-    </ion-list-header>
-    <ion-item>
-      <ion-label>Nhan thong tin tim keo</ion-label>
-      <ion-toggle item-end [(ngModel)]="isReceiveFindingMatch" (ionChange)="toggleChange(typeFindingMatch)"></ion-toggle>
-      <ion-icon *ngIf="isReceiveFindingMatch" item-end (click)="openFindingPlayerSettingModal(typeFindingMatch)" name="settings"></ion-icon>
-    </ion-item>
-    <ion-item>
-      <ion-label>Nhan thong tin tim doi</ion-label>
-      <ion-toggle item-end [(ngModel)]="isReceiveFindingTeam" (ionChange)="toggleChange(typeFindingTeam)"></ion-toggle>
-      <ion-icon *ngIf="isReceiveFindingTeam" item-end (click)="openFindingPlayerSettingModal(typeFindingTeam)" name="settings"></ion-icon>
-    </ion-item>
-    <ion-item>
-      <ion-label>Nhan thong tin tim cau thu</ion-label>
-      <ion-toggle item-end [(ngModel)]="isReceiveFindingPlayer" (ionChange)="toggleChange(typeFindingMatch)"></ion-toggle>
-      <ion-icon *ngIf="isReceiveFindingPlayer" item-end (click)="openFindingPlayerSettingModal(typeFindingMatch)" name="settings"></ion-icon>
-    </ion-item>
-  </ion-list>
+  <ion-card>
+    <ion-card-header>
+      Thông Báo
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item>
+          <ion-label>Nhan thong tin tim keo</ion-label>
+          <ion-toggle item-end [(ngModel)]="isReceiveFindingMatch" (ionChange)="toggleChange(typeFindingMatch)"></ion-toggle>
+          <ion-icon *ngIf="isReceiveFindingMatch" item-end (click)="openFindingPlayerSettingModal(typeFindingMatch)" name="settings"></ion-icon>
+        </ion-item>
+        <ion-item>
+          <ion-label>Nhan thong tin tim doi</ion-label>
+          <ion-toggle item-end [(ngModel)]="isReceiveFindingTeam" (ionChange)="toggleChange(typeFindingTeam)"></ion-toggle>
+          <ion-icon *ngIf="isReceiveFindingTeam" item-end (click)="openFindingPlayerSettingModal(typeFindingTeam)" name="settings"></ion-icon>
+        </ion-item>
+        <ion-item>
+          <ion-label>Nhan thong tin tim cau thu</ion-label>
+          <ion-toggle item-end [(ngModel)]="isReceiveFindingPlayer" (ionChange)="toggleChange(typeFindingPlayer)"></ion-toggle>
+          <ion-icon *ngIf="isReceiveFindingPlayer" item-end (click)="openFindingPlayerSettingModal(typeFindingPlayer)" name="settings"></ion-icon>
+        </ion-item>
+      </ion-list>
+    
+    </ion-card-content>
+  </ion-card>
+  <ion-card>
+    <ion-card-header>
+      Profile
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item>
+          <ion-label stacked>Thành Phố</ion-label>
+          <ion-select [(ngModel)]="player.city_id" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
+            <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Quận/Huyện</ion-label>
+          <ion-select [(ngModel)]="player.district_id">
+            <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Vị Trí</ion-label>
+          <ion-select [(ngModel)]="player.position_id">
+            <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Trình</ion-label>
+          <ion-select [(ngModel)]="player.level_id">
+            <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Số Điện Thoại</ion-label>
+          <ion-input [(ngModel)]="player.phone_number" type="number" placeholder=""></ion-input>
+        </ion-item>
+        <button full ion-item color="primary" (click)="saveProfile()">Lưu</button>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

@@ -21,8 +21,8 @@
 
 <ion-content padding>
     <ion-tabs>
-     <ion-tab tabIcon="information-circle" [root]="tabInformation"></ion-tab>
-     <ion-tab tabIcon="people" [root]="tabMatch"></ion-tab>
-    <ion-tab tabIcon="cash" [root]="tabFund"></ion-tab>
+     <ion-tab tabIcon="information-circle" [root]="tabInformation" [rootParams]="teamParams"></ion-tab>
+     <ion-tab *ngIf="player.is_belong_team" tabIcon="people" [root]="tabMatch" [rootParams]="teamParams"></ion-tab>
+     <ion-tab *ngIf="player.is_belong_team" tabIcon="cash" [root]="tabFund" [rootParams]="teamParams"></ion-tab>
   </ion-tabs>
 </ion-content>

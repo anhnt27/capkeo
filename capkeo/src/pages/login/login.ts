@@ -92,7 +92,8 @@ export class LoginPage {
         {
           name: user.name,
           email: user.email,
-          picture: user.picture
+          picture: user.picture,
+          accessToken: accessToken,
         })
         .then(
           () => {

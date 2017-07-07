@@ -130,14 +130,9 @@ async ionViewDidLoad()
   async openAddModal(){
     let data = {cities: this.cities, districtsByCity: this.districtsByCity, positions: this.positions, levels: this.levels, filterData: this.defaultFilterData};
     let modal = this.modalCtrl.create(ModalAddFindingMatch, data);
-    modal.onDidDismiss(data => {
+    modal.onDidDismiss((data: any) => {
       if(data) {
-        let result: any = data;
-        if(result.code == 200) {
-          this.apiService.presentToast(this.apiService.addedOkMsg);
-        } else {
-          this.apiService.presentToast(this.apiService.addedOkErr);
-        }
+        this.apiService.handlePostResult(data.code);
       }
       this.getFindingMatchs();
     });
@@ -153,7 +148,6 @@ async ionViewDidLoad()
   }
 
   openFilterModal() {
-    let env = this;
     let data = {cities: this.cities, districtsByCity: this.districtsByCity, positions: this.positions, levels: this.levels, filterData: this.filterData};
     let modal = this.modalCtrl.create(ModalFilterFindingMatch, data);
 
@@ -193,7 +187,7 @@ async ionViewDidLoad()
 @Component({
   template: `
     <ion-header>
-      <ion-toolbar>
+      <ion-toolbar color="primary">
         <ion-title>
           Thong Tin Doi
         </ion-title>
@@ -303,7 +297,7 @@ export class ModalFindingMatchDetail {
 @Component({
   template: `
     <ion-header>
-      <ion-toolbar>
+      <ion-toolbar color="primary">
         <ion-title>
           Loc Doi
         </ion-title>
@@ -392,7 +386,7 @@ export class ModalFilterFindingMatch {
 @Component({
   template: `
     <ion-header>
-      <ion-toolbar>
+      <ion-toolbar color="primary">
         <ion-title>
           Add finding player.
         </ion-title>

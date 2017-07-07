@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
+import { CallNumber } from '@ionic-native/call-number';
 import { NativeStorage } from '@ionic-native/native-storage';
 import { Http, Headers, RequestOptions, Response } from '@angular/http';
-import { ToastController } from 'ionic-angular';
+import { ToastController, LoadingController } from 'ionic-angular';
+
 import 'rxjs/add/operator/map';
 
 /*
@@ -16,23 +18,79 @@ export class ApiService {
   public apiDomain: string;
   public postResult: any;
   jwtToken: string;
+  public loading: any;
 
   // message 
-  public addedOkMsg: string;
-  public addedOkErr: string;
+  public processedOkMsg: string;
+  public processedErrMsg: string;
+  // constant
+  public loadingTimeout: number;
+
+  typeFindingTeam: number;
+  typeFindingMatch: number;
+  typeFindingPlayer: number;
+
+  resultCodeSuccess: number;
+  resultCodeErr: number;
+
+
+  // for testing only
+  public isTesting: boolean;
+
   constructor(
     public http: Http, 
     public toastCtrl: ToastController,
+    public callNumber: CallNumber,
     public nativeStorage: NativeStorage,
+    public loadingCtrl: LoadingController, 
   ) {
-    this.apiDomain = 'http://192.168.2.81/';
-
+    this.apiDomain         = 'http://192.168.2.81/';
+    
     // init message
-    this.addedOkMsg = 'Đã thực hiện thành công :)'; 
-    this.addedOkErr = 'Có lỗi xảy ra. Xin thử lại :('
+    this.processedOkMsg    = 'Đã thực hiện thành công :)'; 
+    this.processedErrMsg   = 'Có lỗi xảy ra :|. Xin thử lại :)'
+
+    // init constant
+    this.loadingTimeout    = 3000;
+    this.typeFindingPlayer = 1;
+    this.typeFindingTeam   = 2;
+    this.typeFindingMatch  = 3;
+    
+    this.resultCodeSuccess = 200;
+    this.resultCodeErr     = 500;
+    
+    // for testing only
+    this.isTesting         = false;
+    this.isTesting         = true;
   }
 
   // helper
+  call(number)
+  {
+    console.log('calling...', number);
+    this.callNumber.callNumber(number, true)
+      .then(() => console.log('Launched dialer!'))
+      .catch(() => console.log('Error launching dialer'));
+  }
+
+  handlePostResult(code, msg = '')
+  {
+    console.log(msg);
+    if(msg === '') {
+      switch (code)
+      {
+        case this.resultCodeSuccess:
+          msg = this.processedOkMsg;
+          break;
+        case this.resultCodeErr:
+          msg = this.processedErrMsg;
+          break;
+      }
+    }
+
+    this.presentToast(msg);
+  }
+
   presentToast(message) 
   {
     let toast = this.toastCtrl.create({
@@ -46,6 +104,24 @@ export class ApiService {
     });
 
     toast.present();
+  }
+
+  handleLoading()
+  {
+    this.loading = this.createLoading();
+    this.loading.present();
+    setTimeout(() => {
+      this.loading.dismiss();
+    }, this.loadingTimeout);
+  }
+
+
+  createLoading() 
+  {
+    return this.loadingCtrl.create({
+      spinner: 'ios',
+      dismissOnPageChange: false,
+    });
   }
 
   getDefaultFilter() 
@@ -64,35 +140,52 @@ export class ApiService {
   async saveNotificationSetting(notificationSetting) 
   {
     let segment = 'save-notification-setting';
-    await this.callPostApi(segment, notificationSetting);
-    return this.postResult;
+    return await this.callPostApi(segment, notificationSetting);
   }
 
   // login handling
-  sendAuthLogin(email: string, name: string, accessToken: string) {
+  sendAuthLogin(email: string, name: string, accessToken: string) 
+  {
     let segment = 'auth/login';
     let auth = {email: email, name: name, inputToken: accessToken};
     return this.callPostApi(segment, auth);    
   }
-  async sendRegistrationId(email, registrationId) {
+  async sendRegistrationId(email, registrationId) 
+  {
     let segment = 'registration';
     let data = {email: email, registrationId: registrationId};
     return this.callPostApi(segment, data);    
   }
 
   // helper api
-  async getLocations() {
+  async getLocations() 
+  {
     let segment = 'get-locations';    
     return this.callGetApi(segment);
   }
 
-  getProperties(name) {
+  getProperties(name) 
+  {
     let segment = 'get-properties/' + name;
     return this.callGetApi(segment);
   }
-  getAllProperties() {
+
+  getAllProperties() 
+  {
     let segment = 'get-all-properties';
     return this.callGetApi(segment);
+  }
+
+  // player
+  getPlayer() {
+    let segment = 'get-player';
+    return this.callGetApi(segment);
+  }
+  updatePlayer(player) 
+  {
+    let segment = 'update-player';
+    return this.callPostApi(segment, player);
+
   }
 
   // notification 
@@ -100,8 +193,10 @@ export class ApiService {
     let segment = 'get-notifications';
     return this.callGetApi(segment);
   }
+
   // finding team
-  getFindingTeams(district, position, level) {
+  getFindingTeams(district, position, level) 
+  {
     if(!district) {
       district = '0';
     }
@@ -126,7 +221,8 @@ export class ApiService {
   }
 
   // finding player
-  getFindingPlayers(district, position, level) {
+  getFindingPlayers(district, position, level) 
+  {
     console.log('calling get finding player', district, position, level);
     if(!district) {
       district = '0';
@@ -151,13 +247,15 @@ export class ApiService {
   }
 
   // finding match
-  getFindingMatchs(district, level) {
+  getFindingMatchs(district, level) 
+  {
     console.log('calling get finding Match', district, level);
     if(!district || district.length == 0) {
       district = '0';
     }
 
-    if(!level || level.length == 0) {
+    if(!level || level.length == 0) 
+    {
       level = '0';
     }
     let segment = 'get-finding-matchs/' + district + '/' + level;
@@ -168,7 +266,8 @@ export class ApiService {
     let segment = 'add-finding-match';
     return this.callPostApi(segment, findingMatch);
   }
-  getFindingMatchById(id) {
+  getFindingMatchById(id) 
+  {
     let segment = 'get-finding-match/' + id;
     return this.callGetApi(segment);
   }
@@ -182,6 +281,20 @@ export class ApiService {
 
     let segment = 'get-stadium-by-district/' + district;
     return this.callGetApi(segment);
+  }
+
+  // team
+  createTeam(team)
+  {
+    let segment = 'create-team';
+    return this.callPostApi(segment, team);
+  }
+
+  //join
+  addJoinTeam(join)
+  {
+    let segment = 'join-team';
+    return this.callPostApi(segment, join);
   }
 
   getJwtToken() {
@@ -200,10 +313,8 @@ export class ApiService {
       }
       );
 
-    let isTest = false;
-    isTest = true;
-    if(isTest) {
-      let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4yLjgxL2F1dGgvbG9naW4iLCJpYXQiOjE0OTkyMzcxMDUsImV4cCI6MTUwMjgzNzEwNSwibmJmIjoxNDk5MjM3MTA1LCJqdGkiOiJtaEEwcGJWRFJnVEw2SzJYIiwic3ViIjo0fQ.z0zt_F2l-af0iZ-OekUeXDvW-wMU2DoHIRv6nWzM_1I';
+    if(this.isTesting) {
+      let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4yLjgxL2F1dGgvbG9naW4iLCJpYXQiOjE0OTk0MjI3MDksImV4cCI6MTUwMzAyMjcwOSwibmJmIjoxNDk5NDIyNzA5LCJqdGkiOiJybDU1dHRwamg4Y2tLZndzIiwic3ViIjo0fQ.unA2uMPMO5qqS2tMi5qdZ4sqp1LUhGMkR2oRb97tfWE';
       this.jwtToken = token;
     }
 

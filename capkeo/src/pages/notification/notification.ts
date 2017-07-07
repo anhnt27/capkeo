@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams, ViewController } from 'ionic-angular';
+import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import { NativeStorage } from '@ionic-native/native-storage';
 
 import { FindingPlayerPage } from '../finding-player/finding-player';
@@ -26,10 +26,6 @@ export class NotificationPage {
   registrationId: string;
   jwtToken: string;
 
-  typeFindingPlayer: number;
-  typeFindingMatch: number;
-  typeFindingTeam: number;
-
   constructor(
     public navParams: NavParams, 
     public apiService: ApiService,
@@ -37,32 +33,31 @@ export class NotificationPage {
     public nativeStorage: NativeStorage, 
     public constantService: ConstantService,
   ) {
-    this.typeFindingPlayer = 1;
-    this.typeFindingTeam   = 2;
-    this.typeFindingMatch  = 3;
-
-    this.sendRegistrationId();
-    this.getNotifications();
-
   }
+
+  async ionViewDidLoad() {
+    await this.sendRegistrationId();
+    await this.getNotifications();
+  }
+
 
   async navigateToDetail(notification) 
   {
     switch(notification.data.params.type) 
     {
-      case this.typeFindingPlayer:
+      case this.apiService.typeFindingPlayer:
         this.apiService.getFindingPlayerById(notification.data.params.id)
         .then(data => {
           this.navCtrl.setRoot(FindingPlayerPage, {findingPlayer: data});
         }, error => console.log(error));
         break;
-      case this.typeFindingTeam:
+      case this.apiService.typeFindingTeam:
         this.apiService.getFindingTeamById(notification.data.params.id)
         .then(data => {
           this.navCtrl.setRoot(FindingTeamPage, {findingTeam: data});
         }, error => console.log(error));
         break;
-      case this.typeFindingMatch:
+      case this.apiService.typeFindingMatch:
         this.apiService.getFindingMatchById(notification.data.params.id)
         .then(data => {
           this.navCtrl.setRoot(FindingMatchPage, {findingMatch: data});
@@ -99,11 +94,6 @@ export class NotificationPage {
       );
     await this.apiService.sendRegistrationId(this.email, this.registrationId);
   }
-
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad NotificationPage');
-  }
-
 }
 
 
