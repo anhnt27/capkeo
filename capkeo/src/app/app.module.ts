@@ -11,13 +11,14 @@ import { CallNumber } from '@ionic-native/call-number';
 import { MyApp } from './app.component';
 import { LoginPage } from '../pages/login/login';
 import { HomePage } from '../pages/home/home';
-import { TeamPage, TabTeamInformationPage, TabTeamMatchPage, TabTeamFundPage, ModalAddTeam } from '../pages/team/team';
+import { TeamPage, TabTeamFundPage, ModalAddTeam, ModalUpdateTeam, ModalAddMatch, ModalTeamDetail, ModalPlayerDetail } from '../pages/team/team';
 import { FindingTeamPage, ModalAddFindingTeam, ModalFindingTeamDetail, ModalFilterFindingTeam } from '../pages/finding-team/finding-team';
 import { FindingPlayerPage, ModalFindingPlayerDetail, ModalFilterFindingPlayer, ModalAddFindingPlayer } from '../pages/finding-player/finding-player';
 import { FindingMatchPage, ModalFindingMatchDetail, ModalFilterFindingMatch, ModalAddFindingMatch } from '../pages/finding-match/finding-match';
 import { FindingStadiumPage, ModalStadiumDetail } from '../pages/finding-stadium/finding-stadium';
 import { NotificationPage } from '../pages/notification/notification';
 import { SettingPage, FindingPlayerSettingModal } from '../pages/setting/setting';
+import { SearchPage } from '../pages/search/search';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -53,14 +54,17 @@ import { ConstantService } from '../providers/constant-service/constant-service'
     ModalStadiumDetail,
 
     TeamPage,
-    TabTeamInformationPage,
-    TabTeamMatchPage,
     TabTeamFundPage,
     ModalAddTeam,
+    ModalUpdateTeam, 
+    ModalAddMatch,
+    ModalTeamDetail,
+    ModalPlayerDetail,
 
 
     SettingPage,
-    FindingPlayerSettingModal
+    SearchPage,
+    FindingPlayerSettingModal,
 
   ],
   imports: [
@@ -97,14 +101,17 @@ import { ConstantService } from '../providers/constant-service/constant-service'
     ModalStadiumDetail,
 
     TeamPage,
-    TabTeamInformationPage,
-    TabTeamMatchPage,
     TabTeamFundPage,
     ModalAddTeam,
+    ModalUpdateTeam, 
+    ModalAddMatch,
+    ModalTeamDetail,
+    ModalPlayerDetail,
 
     
     SettingPage,
-    FindingPlayerSettingModal
+    SearchPage,
+    FindingPlayerSettingModal,
   ],
   providers: [
     StatusBar,

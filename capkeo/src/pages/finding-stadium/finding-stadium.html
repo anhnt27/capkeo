@@ -6,36 +6,27 @@
 -->
 <ion-header>
   <ion-navbar color="primary">
-    <button ion-button menuToggle color="dark">
-      <ion-icon name="menu"></ion-icon>
-    </button>
-    <ion-title>Tim San</ion-title>
+    <ion-title>Tìm Sân</ion-title>
   </ion-navbar>
 </ion-header>
 <ion-content padding>  
-  <ion-card>
-    <ion-card-header>  
-    </ion-card-header>
-    <ion-card-content>
-        <ion-item>
-          <ion-label>Thành Phố</ion-label>
-          <ion-select [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
-            <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-          <ion-label>Quận/Huyện</ion-label>
-          <ion-select [(ngModel)]="selectedDistrict" (ngModelChange)="updateStadium()">
-            <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
-          </ion-select>
-        </ion-item>
-      <ion-list>
-        <ion-card *ngFor="let stadium of stadiums" (click)="openDetailModal(stadium)">
-          <ion-card-content>
-          <b> [{{stadium.name}}]</b> -- {{stadium.address}}
-          </ion-card-content>
-        </ion-card>
-      </ion-list>
-    </ion-card-content>
-  </ion-card> 
+ <ion-item>
+    <ion-label>Thành Phố</ion-label>
+    <ion-select [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
+      <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
+    </ion-select>
+  </ion-item>
+  <ion-item>
+    <ion-label>Quận/Huyện</ion-label>
+    <ion-select [(ngModel)]="selectedDistrict" (ngModelChange)="updateStadium()">
+      <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
+    </ion-select>
+  </ion-item>
+  <ion-list>
+    <ion-card *ngFor="let stadium of stadiums" (click)="openDetailModal(stadium)">
+      <ion-card-content>
+      <b> [{{stadium.name}}]</b> -- {{stadium.address}}
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
 </ion-content>

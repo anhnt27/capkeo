@@ -6,23 +6,191 @@
 -->
 <ion-header>
   <ion-navbar color="primary">
-    <button ion-button menuToggle color="dark">
-      <ion-icon name="menu"></ion-icon>
-    </button>
-    <ion-title>Team</ion-title>
-    <ion-buttons end>
-      <button ion-button icon-only (click)="call()">
-        <ion-icon name="crop" color="dark"></ion-icon>
-      </button>
-    </ion-buttons>
+    <ion-title>Đồng đội</ion-title>
   </ion-navbar>
 </ion-header>
 
 
 <ion-content padding>
-    <ion-tabs>
-     <ion-tab tabIcon="information-circle" [root]="tabInformation" [rootParams]="teamParams"></ion-tab>
-     <ion-tab *ngIf="player.is_belong_team" tabIcon="people" [root]="tabMatch" [rootParams]="teamParams"></ion-tab>
-     <ion-tab *ngIf="player.is_belong_team" tabIcon="cash" [root]="tabFund" [rootParams]="teamParams"></ion-tab>
-  </ion-tabs>
+  <ion-refresher (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content  refreshingSpinner="ios" pullingIcon="arrow-dropdown"></ion-refresher-content>
+  </ion-refresher>
+  <ion-list *ngIf="!currentPlayer.team_id && isDataLoaded">
+    <ion-item *ngFor="let inviteRequest of inviteRequests ">
+      <p>{{inviteRequest.team_name}} muốn mời bạn vào đội.</p>
+      <ion-icon (click)="acceptInvite(inviteRequest.id, 1)" name="checkbox" item-end></ion-icon>
+      <ion-icon (click)="declineInvite(inviteRequest.id, 0)" name="remove-circle" item-end></ion-icon>
+    </ion-item>
+    <br>
+    <ion-list>
+      <ion-item>
+        <button ion-button clear (click)="showJoinTeamPrompt()">Xin vào đội</button>
+      </ion-item>
+      <ion-item>
+        <button ion-button clear (click)="openAddTeamModal()">Lập đội mới</button>
+      </ion-item>
+    </ion-list>
+  </ion-list>
+  <ion-segment [(ngModel)]="teamSegment" *ngIf="currentPlayer.team_id && isDataLoaded">
+    <ion-segment-button value="information">
+       <ion-icon name="information-circle"></ion-icon>
+    </ion-segment-button>
+    <ion-segment-button value="matches" >
+       <ion-icon name="football"></ion-icon>
+    </ion-segment-button>
+    <ion-segment-button value="people">
+       <ion-icon name="people"></ion-icon>
+    </ion-segment-button>
+    <ion-segment-button value="cash" *ngIf="false">
+       <ion-icon name="cash"></ion-icon>
+    </ion-segment-button>
+  </ion-segment>
+
+  <div [ngSwitch]="teamSegment" *ngIf="currentPlayer.team_id && isDataLoaded">
+    <ion-list *ngSwitchCase="'information'">
+      <ion-list *ngIf="currentPlayer.team_id && currentPlayer.is_team_lead">
+        <ion-item *ngFor="let joiningRequest of joiningRequests">
+          <p>{{joiningRequest.player_name}} muốn vào đội.</p>
+          <ion-icon (click)="accept(joiningRequest.id, 1)" name="checkbox" item-end></ion-icon>
+          <ion-icon (click)="decline(joiningRequest.id, 0)" name="remove-circle" item-end></ion-icon>
+        </ion-item>
+      </ion-list>
+
+      <ion-list *ngIf="currentPlayer.team_id">
+        <ion-item>
+          <ion-label> Is Leader setting</ion-label>
+          <ion-toggle [(ngModel)]="isLeader"></ion-toggle>
+        </ion-item>
+        <ion-item *ngIf="isLeader">
+          <ion-label>Team đã đủ người</ion-label>
+          <ion-toggle checked="false"></ion-toggle>
+        </ion-item>
+        <ion-item>
+            <ion-label>Tên đội : </ion-label>
+            <p item-end>{{team.name}}</p>
+        </ion-item>
+        <ion-item>
+            <ion-label>Số Thành Viên</ion-label>
+            <p item-end>{{team.number_of_member}}</p>
+        </ion-item>
+        <ion-item>
+            <ion-label>Quận</ion-label>
+            <p item-end>2</p>
+        </ion-item>
+        <ion-item text-wrap >
+            <ion-label>Thoi gian hoat dong</ion-label>
+            <p>{{team.usual_match_time}} </p>
+        </ion-item>
+        <ion-item>
+            <ion-label>Tuổi trung binh</ion-label>
+            <p item-end>{{team.average_age}}</p>
+        </ion-item>
+        <ion-item text-wrap *ngIf="team.message">
+          <ion-label>Giới thiệu</ion-label>
+          <p>{{team.message}}</p>
+        </ion-item>
+      </ion-list>
+    </ion-list>
+    
+    <ion-list *ngSwitchCase="'matches'">
+      <br>
+      <ion-list>
+        <ion-item color="light">
+          <ion-label>Trận</ion-label>
+          <ion-select [(ngModel)]="selectedMatchId" (ngModelChange)="getMatch(selectedMatchId)" cancelText="Cancel" okText="Select">
+            <ion-option *ngFor="let match of matches" value="{{match.id}}">{{match.match_name}}</ion-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+      <br>
+      <ion-list *ngIf="selectedMatch.id">
+        <ion-item> 
+          <label>Sân</label>
+          <p item-end>{{selectedMatch.address}}</p>
+        </ion-item>
+        <ion-item> 
+          <label>Giờ</label>
+          <p item-end>{{selectedMatch.from}} - {{selectedMatch.to}}</p>
+        </ion-item>
+        <ion-item *ngIf="selectedMatch.message" text-wrap>
+          <label>Message</label>
+          <p>{{selectedMatch.message}}</p>
+        </ion-item>
+        <ion-item>
+          <ion-label>Sẽ đi: </ion-label>
+          <p item-end>{{selectedMatch.confirmed_number}}</p>
+        </ion-item>
+        <ion-item>
+          <p item-start>Bạn sẽ tham gia?</p>
+          <ion-toggle *ngIf="confirmStatusData.confirm_status == 1 || confirmStatusData.confirm_status == 0"  [(ngModel)]="confirmStatus" (ngModelChange)="confirmJoinMatch(confirmStatus)"></ion-toggle>
+
+          <button item-end *ngIf="confirmStatusData.confirm_status == -1" ion-button color="primary" small (click)="confirmJoinMatch(0)">Không</button>  
+          <button item-end *ngIf="confirmStatusData.confirm_status == -1" ion-button color="primary" small (click)="confirmJoinMatch(1)">Có</button>  
+        </ion-item>
+      </ion-list>
+      <ion-card *ngIf="selectedMatch.id">
+        <ion-card-header >
+          Điểm quân
+        </ion-card-header>
+        <ion-card-content>
+            <ion-list>
+                <ion-item *ngFor="let player of selectedMatchPlayers">
+                  <p><b>{{player.name}}</b></p>
+
+                  <p *ngIf="player.confirm_status == 1">Ok! Chiến.</p>
+                  <ion-icon name="walk" color="primary" item-end *ngIf="player.confirm_status == 1"></ion-icon>
+                  <p *ngIf="player.confirm_status == 0">Chở má đi bơi zòi</p>
+                  <ion-icon name="woman" color="primary" item-end *ngIf="player.confirm_status == 0"></ion-icon>
+                  <p *ngIf="player.confirm_status == -1">...</p>
+                  <ion-icon name="call" color="primary" item-end *ngIf="player.confirm_status == -1"></ion-icon>
+                </ion-item>
+            </ion-list>
+        </ion-card-content>
+      </ion-card>
+      
+    </ion-list>
+    <ion-list *ngSwitchCase="'people'">
+      <ion-list>
+        <ion-item *ngFor="let teamPlayer of teamPlayers">
+            <ion-avatar item-start>
+              <img src="https://scontent.fsgn4-1.fna.fbcdn.net/v/t1.0-1/c0.0.959.959/19275244_1368787403234870_8460842675365797296_n.jpg?oh=89b7a281c323a4f15cd3dfb60b51d43c&oe=5A0DD414">
+            </ion-avatar>
+            <p>{{teamPlayer.name}}</p>
+            <button ion-button clear item-end (click)="openPlayerDetailModal(teamPlayer)">Xem</button>
+            <button ion-button clear item-end *ngIf="isLeader && teamPlayer.id != currentPlayer.id" (click)="showConfirmRemoveMember(teamPlayer.id)">Xóa</button>
+        </ion-item>
+      </ion-list>
+      <!-- <ion-fab right bottom *ngIf="isLeader">
+        <ion-buttons end>
+          <button ion-fab color="primary" (click)="showInviteMemberPrompt()">
+            <ion-icon name="add"></ion-icon>
+          </button>
+        </ion-buttons>
+      </ion-fab> -->
+    </ion-list>
+  </div>
+  <ion-fab right bottom *ngIf="isLeader && teamSegment=='matches'">
+    <ion-buttons end>
+      <button ion-fab color="primary" (click)="openModalAddMatch()">
+        <ion-icon name="add"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-fab>
+
+  <ion-fab right bottom *ngIf="teamSegment=='people'">
+    <ion-buttons end>
+      <button ion-fab color="primary" (click)="showInviteMemberPrompt()">
+        <ion-icon name="add"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-fab>
+
+  <ion-fab right bottom *ngIf="isLeader && teamSegment=='information'">
+    <ion-buttons end>
+      <button ion-fab color="primary" (click)="openUpdateTeamModal(team)">
+        <ion-icon name="create"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-fab>
+
 </ion-content>

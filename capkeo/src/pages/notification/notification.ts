@@ -1,10 +1,13 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import { NativeStorage } from '@ionic-native/native-storage';
+import { IonicPage, NavController, NavParams, ModalController, Events } from 'ionic-angular';
 
-import { FindingPlayerPage } from '../finding-player/finding-player';
-import { FindingTeamPage } from '../finding-team/finding-team';
-import { FindingMatchPage } from '../finding-match/finding-match';
+import { SettingPage } from '../setting/setting';
+import { ModalFindingTeamDetail } from '../finding-team/finding-team';
+import { ModalFindingMatchDetail } from '../finding-match/finding-match';
+import { ModalFindingPlayerDetail } from '../finding-player/finding-player';
+
+import { ModalPlayerDetail, ModalTeamDetail } from '../../pages/team/team';
 
 import { ApiService } from '../../providers/api-service/api-service';
 import { ConstantService } from '../../providers/constant-service/constant-service';
@@ -21,56 +24,142 @@ import { ConstantService } from '../../providers/constant-service/constant-servi
   providers: [ApiService]
 })
 export class NotificationPage {
-  notifications: any;
-  email: string;
-  registrationId: string;
-  jwtToken: string;
+  isReady : boolean = false;
+  notifications  : any;
+  email          : string;
+  jwtToken       : string;
+  registrationId : string;
+
 
   constructor(
+    public events: Events, 
     public navParams: NavParams, 
     public apiService: ApiService,
     public navCtrl: NavController, 
+    public modalCtrl: ModalController, 
     public nativeStorage: NativeStorage, 
     public constantService: ConstantService,
   ) {
+    this.notifications = [];
+  }
+
+  async doRefresh(refresher)
+  {
+    await this.getNotifications();
+    refresher.complete();
+  }
+
+  openSetting()
+  {
+    this.navCtrl.parent.select(3);
+  }
+  setting()
+  {
+    this.navCtrl.setRoot(SettingPage);
   }
 
   async ionViewDidLoad() {
-    await this.sendRegistrationId();
+    this.apiService.handleLoading();
+    // await this.sendRegistrationId();
     await this.getNotifications();
   }
 
-
   async navigateToDetail(notification) 
   {
+    // update isRead
+    console.log(notification);
+    this.apiService.handleLoading();
+
+
+
+    // this.navCtrl.parent.select(2);
+    // this.navCtrl.parent.countUnreadNotifications();
+
     switch(notification.data.params.type) 
     {
       case this.apiService.typeFindingPlayer:
         this.apiService.getFindingPlayerById(notification.data.params.id)
         .then(data => {
-          this.navCtrl.setRoot(FindingPlayerPage, {findingPlayer: data});
+          let dataForModal = {findingPlayer: data};
+          console.log('open modal');
+          this.openDetailModal(ModalFindingPlayerDetail, dataForModal);
         }, error => console.log(error));
         break;
       case this.apiService.typeFindingTeam:
         this.apiService.getFindingTeamById(notification.data.params.id)
         .then(data => {
-          this.navCtrl.setRoot(FindingTeamPage, {findingTeam: data});
+          let dataForModal = {findingTeam: data};
+          this.openDetailModal(ModalFindingTeamDetail, dataForModal);
         }, error => console.log(error));
         break;
       case this.apiService.typeFindingMatch:
         this.apiService.getFindingMatchById(notification.data.params.id)
         .then(data => {
-          this.navCtrl.setRoot(FindingMatchPage, {findingMatch: data});
+          let dataForModal = {findingMatch: data};
+          this.openDetailModal(ModalFindingMatchDetail, dataForModal);
         }, error => console.log(error));
         break;
+      case this.apiService.typeJoinTeam:
+        this.apiService.getPlayerById(notification.data.params.player_id)
+        .then(data => {
+          let dataForModal = {player: data};
+          this.openDetailModal(ModalPlayerDetail, dataForModal);
+        }, error => console.log(error));
+        break;
+      case this.apiService.typeInviteMember:
+        this.apiService.getTeamById(notification.data.params.team_id)
+        .then(data => {
+          let dataForModal = {team: data};
+          this.openDetailModal(ModalTeamDetail, dataForModal);
+        }, error => console.log(error));
+        break;
+      default:
+        break;
+    }
+    if(! notification.read_at) {
+      await this.apiService.updateNotificationIsRead({id: notification.id});
+      this.events.publish('read:notification');
+      this.getNotifications();
     }
   }
 
-  getNotifications() {
-    this.apiService.getNotifications().
+
+  // openDetailModal(playerId) 
+  // {
+  //   this.apiService.getPlayerById(playerId).
+  //   then((data: any) =>{
+  //     let modalParam = {player: data};
+      
+  //     let modal = this.modalCtrl.create(ModalPlayerDetail, modalParam);
+  //     modal.present();
+  //   });
+  // }
+
+  // openDetailModal(teamId) 
+  // {
+  //   this.apiService.getTeamById(teamId).
+  //   then((data: any) =>{
+  //     let modalParam = {team: data};
+      
+  //     let modal = this.modalCtrl.create(ModalTeamDetail, modalParam);
+  //     modal.present();
+  //   });
+  // }
+
+
+  openDetailModal(modalName, data) {
+    let modal = this.modalCtrl.create(modalName, data);
+    modal.onDidDismiss((data: any) => {
+    });
+
+    modal.present();
+  }
+
+  async getNotifications() {
+    await this.apiService.getNotifications().
     then(data => {
-      console.log(data);
       this.notifications = data;
+      this.isReady = true;
     },
     error => console.log(error)
     );

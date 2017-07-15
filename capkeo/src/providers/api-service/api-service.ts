@@ -29,9 +29,14 @@ export class ApiService {
   typeFindingTeam: number;
   typeFindingMatch: number;
   typeFindingPlayer: number;
+  typeJoinTeam: number;
+  typeInviteMember: number;
 
   resultCodeSuccess: number;
   resultCodeErr: number;
+
+  expiredDays: number = 12;
+  aheadDays: number = 30;
 
 
   // for testing only
@@ -55,6 +60,8 @@ export class ApiService {
     this.typeFindingPlayer = 1;
     this.typeFindingTeam   = 2;
     this.typeFindingMatch  = 3;
+    this.typeJoinTeam      = 4;
+    this.typeInviteMember  = 5;
     
     this.resultCodeSuccess = 200;
     this.resultCodeErr     = 500;
@@ -75,7 +82,6 @@ export class ApiService {
 
   handlePostResult(code, msg = '')
   {
-    console.log(msg);
     if(msg === '') {
       switch (code)
       {
@@ -96,11 +102,10 @@ export class ApiService {
     let toast = this.toastCtrl.create({
       message: message,
       duration: 3000,
-      position: 'bottom'
+      position: 'top'
     });
 
     toast.onDidDismiss(() => {
-      console.log('Dismissed toast');
     });
 
     toast.present();
@@ -136,7 +141,6 @@ export class ApiService {
     let segment = 'get-notification-setting/' + type;    
     return this.callGetApi(segment)
   }
-
   async saveNotificationSetting(notificationSetting) 
   {
     let segment = 'save-notification-setting';
@@ -177,8 +181,14 @@ export class ApiService {
   }
 
   // player
-  getPlayer() {
+  getPlayer() 
+  {
     let segment = 'get-player';
+    return this.callGetApi(segment);
+  }
+  getPlayerById(playerId) 
+  {
+    let segment = 'get-player/' + playerId;
     return this.callGetApi(segment);
   }
   updatePlayer(player) 
@@ -192,6 +202,15 @@ export class ApiService {
   getNotifications() {
     let segment = 'get-notifications';
     return this.callGetApi(segment);
+  }
+  countUnreadNotifications() {
+    let segment = 'count-unread-notifications';
+    return this.callGetApi(segment);
+  }
+  updateNotificationIsRead(notification)
+  {
+    let segment = 'update-notification-is-read';
+    return this.callPostApi(segment, notification);
   }
 
   // finding team
@@ -211,7 +230,6 @@ export class ApiService {
   }
   addFindingTeam(findingteam) 
   {
-    console.log('add finding team called');
     let segment = 'add-finding-team';
     return this.callPostApi(segment, findingteam);
   }
@@ -223,7 +241,6 @@ export class ApiService {
   // finding player
   getFindingPlayers(district, position, level) 
   {
-    console.log('calling get finding player', district, position, level);
     if(!district) {
       district = '0';
     }
@@ -249,7 +266,6 @@ export class ApiService {
   // finding match
   getFindingMatchs(district, level) 
   {
-    console.log('calling get finding Match', district, level);
     if(!district || district.length == 0) {
       district = '0';
     }
@@ -274,7 +290,6 @@ export class ApiService {
 
   //finding stadium
   getFindingStadiums(district) {
-    console.log('calling get finding Stadium', district);
     if(!district) {
       district = '0';
     }
@@ -289,6 +304,54 @@ export class ApiService {
     let segment = 'create-team';
     return this.callPostApi(segment, team);
   }
+  updateTeam(team)
+  {
+    let segment = 'update-team';
+    return this.callPostApi(segment, team);
+  }
+  getTeam()
+  {
+    let segment = 'get-team';
+    return this.callGetApi(segment);
+  }
+  getTeamPlayers()
+  {
+    let segment = 'get-team-players';
+    return this.callGetApi(segment);
+  }
+  getTeamById(teamId)
+  {
+    let segment = 'get-team/' + teamId ;
+    return this.callGetApi(segment);
+  }
+  removeMember(player)
+  {
+    let segment = 'remove-member';
+    return this.callPostApi(segment, player);
+  }
+
+  // match
+  createMatch(match)
+  {
+    let segment = 'create-match';
+    return this.callPostApi(segment, match);
+  }
+  getMatches()
+  {
+    let segment = 'get-matches';
+    return this.callGetApi(segment);
+  }
+  getMatch(id)
+  {
+    let segment = 'get-match/' + id;
+    return this.callGetApi(segment);
+  }
+  confirmJoinMatch(confirm)
+  {
+    let segment = 'confirm-join-match';
+    return this.callPostApi(segment, confirm);
+  }
+
 
   //join
   addJoinTeam(join)
@@ -296,8 +359,30 @@ export class ApiService {
     let segment = 'join-team';
     return this.callPostApi(segment, join);
   }
-
-  getJwtToken() {
+  updateJoinTeam(join)
+  {
+    let segment = 'update-join-team';
+    return this.callPostApi(segment, join);
+  }
+  getJoiningTeamRequests()
+  {
+    let segment = 'get-joining-team-requests';
+    return this.callGetApi(segment);
+  }
+  addInviteMember(join)
+  {
+    let segment = 'invite-member';
+    return this.callPostApi(segment, join);
+  }
+  getInviteRequests()
+  {
+    let segment = 'get-invite-request';
+    return this.callGetApi(segment);
+  }
+  updateInviteMember(join)
+  {
+    let segment = 'update-invite-member';
+    return this.callPostApi(segment, join);
   }
 
   async prepareHeader(isContentRequired){
@@ -309,12 +394,20 @@ export class ApiService {
         env.jwtToken = data;
       },
       error => {
-        console.log(error);
+        // console.log(error);
       }
       );
 
     if(this.isTesting) {
-      let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4yLjgxL2F1dGgvbG9naW4iLCJpYXQiOjE0OTk0MjI3MDksImV4cCI6MTUwMzAyMjcwOSwibmJmIjoxNDk5NDIyNzA5LCJqdGkiOiJybDU1dHRwamg4Y2tLZndzIiwic3ViIjo0fQ.unA2uMPMO5qqS2tMi5qdZ4sqp1LUhGMkR2oRb97tfWE';
+
+      // anh nguyen
+      let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4yLjgxL2F1dGgvbG9naW4iLCJpYXQiOjE1MDAwMjM2NTgsImV4cCI6MTUwMzYyMzY1OCwibmJmIjoxNTAwMDIzNjU4LCJqdGkiOiJzQWxFY1lDcmFlUnlNaVBSIiwic3ViIjo0fQ.QHiM0TF86CTWqytSFk4Nxh70lvWUmnqgC7uBaBBC_TM';
+     
+      // user 1
+      // token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4yLjgxL2F1dGgvbG9naW4iLCJpYXQiOjE1MDAwMzA2MzUsImV4cCI6MTUwMzYzMDYzNSwibmJmIjoxNTAwMDMwNjM1LCJqdGkiOiJGUmtlaEUwRjJNZVhyTzB4Iiwic3ViIjoxfQ.Av5pc16eoDgnzkQ4muwTp9v7CPzgib0b0AmhjQNxojM';
+      
+      //user 2
+      // token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4yLjgxL2F1dGgvbG9naW4iLCJpYXQiOjE1MDAwMzA2NjksImV4cCI6MTUwMzYzMDY2OSwibmJmIjoxNTAwMDMwNjY5LCJqdGkiOiJ2SllmOUdrMHJWMGhpaExaIiwic3ViIjoyfQ.5SbVaY1sTpzKKrDfwTXA5VZQhwNtZ3tjTfySMFfILW8';
       this.jwtToken = token;
     }
 
@@ -340,7 +433,7 @@ export class ApiService {
           this.data = data;
           resolve(this.data);
         }, error => {
-        
+          console.log(error);
         });
     });
   }
@@ -362,27 +455,4 @@ export class ApiService {
       });
     });
   }
-
-
-  load(info: string ) {
-      return new Promise(resolve => {
-        // We're using Angular HTTP provider to request the data,
-        // then on the response, it'll map the JSON data to a parsed JS object.
-        // Next, we process the data and resolve the promise with the new data.
-        // this.http.get('https://randomuser.me/api/?results=10')
-        this.http.get('http://192.168.2.81/foo/' + info)
-          .map((res: Response) => res.json())
-          .subscribe(data => {
-            // we've got back the raw data, now generate the core schedule data
-            // and save the data for later reference
-            alert('success called' + info);
-            this.data = data;
-            alert(data);
-            resolve(this.data);
-          }, error => {
-            alert('error returned' + info);
-            });
-      });
-    }
-  
 }

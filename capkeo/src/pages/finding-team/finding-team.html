@@ -6,13 +6,10 @@
 -->
 <ion-header>
   <ion-navbar color="primary">
-    <button ion-button menuToggle color="dark">
-      <ion-icon name="menu"></ion-icon>
-    </button>
-    <ion-title>Tim Doi</ion-title>
+    <ion-title>Tìm đội</ion-title>
     <ion-buttons end>
         <button ion-button icon-only color="royal" (click)="openFilterModal()">
-          <ion-icon name="settings" color="dark"></ion-icon>
+          <ion-icon name="crop" color="light"></ion-icon>
         </button>
       </ion-buttons>
   </ion-navbar>
@@ -21,10 +18,6 @@
   <ion-refresher (ionRefresh)="doRefresh($event)">
     <ion-refresher-content  refreshingSpinner="ios" pullingIcon="arrow-dropdown"></ion-refresher-content>
   </ion-refresher>
-  <ion-item>
-    <ion-label>Dang tin tim doi</ion-label>
-    <ion-icon  item-end (click)="openAddModal({})" name="add-circle"></ion-icon>
-  </ion-item>
   <ion-list>
     <ion-card *ngFor="let findingTeam of findingTeams" (click)="openDetailModal(findingTeam)">
       <ion-card-header>
@@ -35,4 +28,11 @@
       </ion-card-content>
     </ion-card>
   </ion-list>
+  <ion-fab right bottom>
+    <ion-buttons end>
+      <button ion-fab color="primary" (click)="openAddModal({})">
+        <ion-icon name="add"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-fab>
 </ion-content>

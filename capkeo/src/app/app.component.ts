@@ -7,6 +7,7 @@ import { Push, PushObject, PushOptions } from "@ionic-native/push";
 
 //Pages
 import { LoginPage } from '../pages/login/login';
+import { HomePage } from '../pages/home/home';
 import { SettingPage } from '../pages/setting/setting';
 import { FindingTeamPage } from '../pages/finding-team/finding-team';
 import { NotificationPage } from '../pages/notification/notification';
@@ -72,7 +73,7 @@ export class MyApp {
       env.nativeStorage.remove('user');
 
       if(this.apiService.isTesting) {
-        env.nav.setRoot(TeamPage);
+        env.nav.setRoot(HomePage);
       } else {
         env.nativeStorage.getItem('user')
           .then( function (data) {
@@ -110,7 +111,7 @@ export class MyApp {
 
   initPushNotification() {
     if (!this.platform.is('cordova')) {
-      console.log("Push notifications not initialized. Cordova is not available - Run in physical device");
+      // console.log("Push notifications not initialized. Cordova is not available - Run in physical device");
       return;
     }
     const options: PushOptions = {

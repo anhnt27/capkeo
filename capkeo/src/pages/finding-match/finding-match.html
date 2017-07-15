@@ -5,14 +5,11 @@
   Ionic pages and navigation.
 -->
 <ion-header>
-  <ion-navbar>
-    <button ion-button menuToggle color="primary">
-      <ion-icon name="menu"></ion-icon>
-    </button>
-    <ion-title>Doi dang tim keo</ion-title>
+  <ion-navbar color="primary">
+    <ion-title>Tìm kèo</ion-title>
     <ion-buttons end>
         <button ion-button icon-only color="royal" (click)="openFilterModal()">
-          <ion-icon name="settings" color="primary"></ion-icon>
+          <ion-icon name="crop" color="light"></ion-icon>
         </button>
       </ion-buttons>
   </ion-navbar>
@@ -21,10 +18,6 @@
   <ion-refresher (ionRefresh)="doRefresh($event)">
     <ion-refresher-content  refreshingSpinner="ios" pullingIcon="arrow-dropdown"></ion-refresher-content>
   </ion-refresher>
-  <ion-item>
-    <ion-label>Dang tin tim cau thu</ion-label>
-    <ion-icon  item-end (click)="openAddModal({})" name="add-circle"></ion-icon>
-  </ion-item>
   <ion-list>
     <ion-card *ngFor="let findingMatch of findingMatchs" (click)="openDetailModal(findingMatch)">
       <ion-card-content>
@@ -32,4 +25,11 @@
       </ion-card-content>
     </ion-card>
   </ion-list>
+  <ion-fab right bottom>
+    <ion-buttons end>
+      <button ion-fab color="primary" (click)="openAddModal({})">
+        <ion-icon name="add"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-fab>
 </ion-content>

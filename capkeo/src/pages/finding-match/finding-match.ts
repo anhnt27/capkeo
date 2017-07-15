@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-import { CallNumber } from '@ionic-native/call-number';
 import { NativeStorage } from '@ionic-native/native-storage';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
-import { Platform, ModalController, ViewController, LoadingController } from 'ionic-angular';
+import { Platform, ModalController, ViewController } from 'ionic-angular';
+
+import { ModalTeamDetail } from '../../pages/team/team';
 
 import { ApiService } from '../../providers/api-service/api-service';
 
@@ -20,115 +21,63 @@ import { ApiService } from '../../providers/api-service/api-service';
   providers: [ApiService]
 })
 export class FindingMatchPage {
-  findingMatchs: any;
-  cities: any;
-  districts: any;
-  districtsByCity: any;
-  positions: any;
-  levels: any;
-  properties: any;
-
-  selectedCity: any;
-  selectedDistrict: any;
-  selectedPosition: any;
-  selectedLevel: any;
-
-  filterData: any;
-  defaultFilterData: any;
-  loading: any;
+  findingMatchs     : any;
+  cities            : any;
+  districts         : any;
+  districtsByCity   : any;
+  levels            : any;
+  
+  selectedCity      : any;
+  selectedDistrict  : any;
+  selectedLevel     : any;
+  
+  filterData        : any;
+  defaultFilterData : any;
 
   constructor(
-    public platform: Platform, 
-    public navParams: NavParams, 
-    public apiService: ApiService,
-    public navCtrl: NavController, 
-    public modalCtrl: ModalController, 
-    public nativeStorage: NativeStorage,
-    public loadingCtrl: LoadingController, 
+    public platform      : Platform, 
+    public navParams     : NavParams, 
+    public apiService    : ApiService,
+    public navCtrl       : NavController, 
+    public nativeStorage : NativeStorage,
+    public modalCtrl     : ModalController, 
     ) 
   {
-    this.createLoading();
   }
 
 
 async ionViewDidLoad() 
   {
-    //will be moved to home.
-    this.loading.present();
-
-    this.filterData = this.apiService.getDefaultFilter();
-    this.defaultFilterData = this.apiService.getDefaultFilter();
-
-    await this.getLocations();
-    await this.getPositions();
-    await this.getLevels();
-    await this.getAllProperties();
-
-    let findingMatch = this.navParams.get('findingMatch');
-
-    if( findingMatch) {
-      this.openDetailModal(findingMatch);
+    if(this.navParams.data) {
+      this.cities            = this.navParams.data.cities;
+      this.levels            = this.navParams.data.levels;
+      this.districtsByCity   = this.navParams.data.districtsByCity;
+      this.defaultFilterData = this.navParams.data.defaultFilterData;
+      this.filterData        = this.navParams.data.defaultFilterData;
     } 
 
+    //will be moved to home.
+    this.apiService.handleLoading();
     await this.getFindingMatchs();
-
-    this.loading.dismiss();
   }
   async doRefresh(refresher)
   {
-    console.log('refressing....');
     await this.getFindingMatchs();
     refresher.complete();
   }
 
-  createLoading() 
-  {
-    this.loading = this.loadingCtrl.create({
-      spinner: 'ios',
-      dismissOnPageChange: false,
-    });
-  }
   // get data
   async getFindingMatchs() 
   {
     await this.apiService.getFindingMatchs(this.filterData.districtIds, this.filterData.levelIds).
     then(data => {
-      console.log(data);
       this.findingMatchs = data;
-    });
-  }
-
-
-  getLocations() {
-    this.apiService.getLocations()
-    .then(data => {
-      this.cities = data['results']['cities'];
-      this.districtsByCity  = data['results']['districts_by_city'];
-    });
-  }
-  getPositions() {
-    this.apiService.getProperties('position')
-    .then(data => {
-      this.positions = data;
-    });
-  }
-
-  getLevels() {
-    this.apiService.getProperties('level')
-    .then(data => {
-      this.levels = data;
-    });
-  }
-  async getAllProperties() {
-    await this.apiService.getAllProperties()
-    .then(data => {
-      this.properties = data;
     });
   }
 
   // open modal
   async openAddModal(){
-    let data = {cities: this.cities, districtsByCity: this.districtsByCity, positions: this.positions, levels: this.levels, filterData: this.defaultFilterData};
+    let data = {cities: this.cities, districtsByCity: this.districtsByCity, levels: this.levels, filterData: this.defaultFilterData};
     let modal = this.modalCtrl.create(ModalAddFindingMatch, data);
     modal.onDidDismiss((data: any) => {
       if(data) {
@@ -142,155 +91,113 @@ async ionViewDidLoad()
   }
 
   openDetailModal(findingMatch) {
-    let data = {findingMatch: findingMatch, properties: this.properties};
+    let data  = {findingMatch: findingMatch};
     let modal = this.modalCtrl.create(ModalFindingMatchDetail, data);
     modal.present();
   }
 
   openFilterModal() {
-    let data = {cities: this.cities, districtsByCity: this.districtsByCity, positions: this.positions, levels: this.levels, filterData: this.filterData};
+    let data = {cities: this.cities, districtsByCity: this.districtsByCity, levels: this.levels, filterData: this.filterData};
     let modal = this.modalCtrl.create(ModalFilterFindingMatch, data);
 
     modal.onDidDismiss(data => {
      // reload findingMatch with this filter data.
      // should have default filter at the first loading
       if(data) {
-        this.createLoading();
-        this.loading.present();
-        this.filterData = {'cityId': data.cityId, 'districtIds': data.districtIds, 'positionIds': data.positionIds, 'levelIds': data.levelIds};
+        this.apiService.handleLoading();
+        this.filterData = {'cityId': data.cityId, 'districtIds': data.districtIds, 'levelIds': data.levelIds};
 
         this.apiService.getFindingMatchs(data.districtIds, data.levelIds).
         then(data => {
           this.findingMatchs = data;
-          this.loading.dismiss();
         }, error => {
           console.log(error);
-          this.loading.dismiss();
         });
-
-
       }
     });
     modal.present();
   }
-
-  items = [
-    { name: 'Manchester United', district: 'Quan 1', phone_number: '0974796654' },
-    { name: 'Real Marid', district: 'Quan Go Vap', phone_number: '0909792841' },
-    { name: 'Dormund', district: 'Quan 12', phone_number: '0909792841' },
-  ];
-
 }
-
-
 
 @Component({
   template: `
     <ion-header>
       <ion-toolbar color="primary">
         <ion-title>
-          Thong Tin Doi
+          Chi tiết
         </ion-title>
         <ion-buttons start>
           <button ion-button (click)="dismiss()">
-            <span ion-text color="primary" showWhen="ios">Cancel</span>
+            <span ion-text color="light" showWhen="ios">Cancel</span>
             <ion-icon name="md-close" showWhen="android,windows"></ion-icon>
           </button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-grid>
-        <ion-row>
-          <ion-col col-12>
-            <ion-item>
-              <ion-label stacked>Ten </ion-label>
-              <ion-input value="{{findingMatch.player_name}}" readonly="true"></ion-input>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
-            <ion-item>
-              <ion-label>Quan</ion-label>
-              <ion-input value="{{findingMatch.district_name}}" readonly="true"></ion-input>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
-            <ion-item>
-              <ion-label>San</ion-label>
-              <ion-input value="{{findingMatch.address}}" readonly="true"></ion-input>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
-            <ion-item>
-              <ion-label>Trinh do</ion-label>
-              <ion-input value="{{findingMatch.level_name}}" readonly="true"></ion-input>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
-            <ion-item>
-              <ion-label>Loi Nhan</ion-label>
-              <ion-input value="{{findingMatch.message}}" readonly="true"></ion-input>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-10>
-            <ion-item>
-              <ion-label>Phone</ion-label>
-              <ion-input value="{{findingMatch.phone_number}}" readonly="true"><ion-icon name="call" ></ion-icon></ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col col-2>
-            <ion-label stacked></ion-label>
-            <button ion-button icon-only color="royal" (click)="call()" small>
-              <ion-icon name="call" ></ion-icon>
-            </button>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col col-12>
-            <ion-buttons>
-              <button ion-button icon-only color="royal" small>
-                <ion-icon name="person-add"></ion-icon>
-              </button>
-              Xin Vao Doi!
-            </ion-buttons>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+      <ion-item>
+        <label>Tên</label>
+        <p item-end>{{findingMatch.player_name}}</p>
+      </ion-item>
+      <ion-item>
+        <label>Quận</label>
+        <p item-end>{{findingMatch.district_name}}</p>
+      </ion-item>
+      <ion-item>
+        <label>Địa Chỉ</label>
+        <p item-end>{{findingMatch.address}}</p>
+      </ion-item>
+      <ion-item>
+        <label>Trình</label>
+        <p item-end>{{findingMatch.level_name}}</p>
+      </ion-item>
+      <ion-item text-wrap *ngIf="findingMatch.message">
+        <h2>Lời nhắn</h2>
+        <p>{{findingMatch.message}}</p>
+      </ion-item>
+      <ion-item>
+        <label>SĐT</label>
+        <p item-end>{{findingMatch.phone_number}}</p>
+        <ion-icon name="call" item-end (click)="call(findingMatch.phone_number)" smaill></ion-icon>
+      </ion-item>
+      <ion-item>
+        <label>Chi tiết đội bóng</label>
+        <button ion-button clear item-end (click)="openDetailModal(findingMatch.team_id)">Xem</button>
+      </ion-item>
     </ion-content>
   `,
 })
 export class ModalFindingMatchDetail {
   team;
   findingMatch;
-  properties: any;
+  
   constructor(
-    public platform : Platform,
-    public params   : NavParams,
-    public callNumber: CallNumber,
-    public viewCtrl : ViewController,
+    public params     : NavParams,
+    public apiService : ApiService,
+    public viewCtrl   : ViewController,
+    public modalCtrl  : ModalController,
   ) {
-    this.properties    = this.params.get('properties');
     this.findingMatch = this.params.get('findingMatch');
   }
 
   dismiss() {
     this.viewCtrl.dismiss();
   }
-  call()
+
+  openDetailModal(teamId) 
   {
-    this.callNumber.callNumber("0974796654", true)
-      .then(() => console.log('Launched dialer!'))
-      .catch(() => console.log('Error launching dialer'));
+    this.apiService.getTeamById(teamId).
+    then((data: any) =>{
+      let modalParam = {team: data};
+      
+      let modal = this.modalCtrl.create(ModalTeamDetail, modalParam);
+      modal.present();
+    });
+  }
+
+  call(number)
+  {
+    this.apiService.call(number);
   }
 }
 
@@ -299,11 +206,11 @@ export class ModalFindingMatchDetail {
     <ion-header>
       <ion-toolbar color="primary">
         <ion-title>
-          Loc Doi
+          Lọc tin
         </ion-title>
         <ion-buttons start>
           <button ion-button (click)="dismiss()">
-            <span ion-text color="primary" showWhen="ios">Cancel</span>
+            <span ion-text color="light" showWhen="ios">Cancel</span>
             <ion-icon name="md-close" showWhen="android,windows"></ion-icon>
           </button>
         </ion-buttons>
@@ -329,38 +236,42 @@ export class ModalFindingMatchDetail {
             <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
           </ion-select>
         </ion-item>
-        <ion-item>
-            <button ion-button full (click)="filterPlayer()">Filter</button>
-        </ion-item>
+        <ion-fab right bottom>
+          <ion-buttons end>
+            <button ion-fab color="primary" (click)="filterMatch()">
+              <ion-icon name="send"></ion-icon>
+            </button>
+          </ion-buttons>
+        </ion-fab>
       </ion-list>
     </ion-content>
   `,
 })
 export class ModalFilterFindingMatch {
-  cities: any;
-  districtsByCity: any;
-  districts: any;
-  levels: any;
-
-  selectedCity: any;
-  selectedDistrict: any;
-  selectedPosition: any;
-  selectedLevel: any;
-
-  filterData: any;
+  cities           : any;
+  districtsByCity  : any;
+  districts        : any;
+  levels           : any;
+  
+  selectedCity     : any;
+  selectedDistrict : any;
+  selectedLevel    : any;
+  
+  filterData       : any;
 
   constructor(
-    public params: NavParams,
-    public viewCtrl: ViewController,
+    public params     : NavParams,
+    public apiService : ApiService,
+    public viewCtrl   : ViewController,
   ) {
-    this.levels          = this.params.get('levels');
-    this.cities          = this.params.get('cities');
-    this.districtsByCity = this.params.get('districtsByCity');
-    this.filterData      = this.params.get('filterData');
-
-    this.selectedCity = this.filterData.cityId;
+    this.levels           = this.params.get('levels');
+    this.cities           = this.params.get('cities');
+    this.districtsByCity  = this.params.get('districtsByCity');
+    this.filterData       = this.params.get('filterData');
+    
+    this.selectedCity     = this.filterData.cityId;
     this.updateDistrict();
-    this.selectedLevel = this.filterData.levelIds;
+    this.selectedLevel    = this.filterData.levelIds;
     this.selectedDistrict = this.filterData.districtIds;
   }
 
@@ -371,9 +282,13 @@ export class ModalFilterFindingMatch {
     }
   }
 
-  filterPlayer() 
+  filterMatch() 
   {
-    let data = {'cityId': this.selectedCity, 'districtIds': this.selectedDistrict, 'levelIds': this.selectedLevel};
+    let data = {
+      'cityId'      : this.selectedCity, 
+      'districtIds' : this.selectedDistrict, 
+      'levelIds'    : this.selectedLevel,
+    };
     this.viewCtrl.dismiss(data);
   }
 
@@ -388,78 +303,124 @@ export class ModalFilterFindingMatch {
     <ion-header>
       <ion-toolbar color="primary">
         <ion-title>
-          Add finding player.
+          Đăng tin 
         </ion-title>
         <ion-buttons start>
           <button ion-button (click)="dismiss()">
-            <span ion-text color="primary" showWhen="ios">Cancel</span>
+            <span ion-text color="light" showWhen="ios">Cancel</span>
             <ion-icon name="md-close" showWhen="android,windows"></ion-icon>
           </button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content>
+      <ion-item text-wrap>
+        <p>- Tin sẽ hết hạn sau {{this.apiService.expiredDays}} ngày : {{expiredDate}}</p>
+        <p>(*) Thông tin cần thiết.</p>
+      </ion-item>
+
       <ion-list>
         <form [formGroup]="findingMatchForm" (ngSubmit)="logForm()">
-          <ion-item>
-            <ion-label>Thành Phố</ion-label>
-            <ion-select formControlName="cityId" [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
-              <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label>Quận/Huyện</ion-label>
-            <ion-select formControlName="districtIds" >
-              <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label>Trình</ion-label>
-            <ion-select formControlName="levelId" >
-              <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-input type="number" formControlName="phoneNumber" placeholder="Số Điện Thoại"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label floating>Date</ion-label>
-            <ion-datetime displayFormat="DDDD MMMM/D" pickerFormat="MMMM D"  (min)="currentDate" formControlName="matchDate"></ion-datetime>
-          </ion-item>
-          <ion-item>
-            <ion-input type="text" placeholder="Giờ" formControlName="matchHour"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-input type="text" placeholder="Địa chỉ sân" formControlName="address"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-textarea placeholder="Lời nhắn" formControlName="message"></ion-textarea>
-          </ion-item>
-          <button full ion-button type="submit" [disabled]="!findingMatchForm.valid">Lưu</button>
+          <ion-item-group>
+            <ion-item-divider color="light">Địa Điểm</ion-item-divider>
+            <ion-item>
+              <ion-label stacked>Thành Phố</ion-label>
+              <ion-select formControlName="cityId" [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
+                <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label stacked>Quận/Huyện</ion-label>
+              <ion-select formControlName="districtIds" >
+                <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label stacked>Địa chỉ sân</ion-label>
+              <ion-input type="text" formControlName="address"></ion-input>
+            </ion-item>
+          </ion-item-group>
+          
+          <ion-item-group>
+            <ion-item-divider color="light">Thời gian</ion-item-divider>
+            <ion-item>
+              <ion-label stacked>Ngày</ion-label>
+              <ion-datetime displayFormat="DDDD, D MMMM" pickerFormat="MMMM D, YYYY" [(min)]="minDate" [(max)]="maxDate" formControlName="matchDate"></ion-datetime>
+            </ion-item>
+            <ion-item>
+              <ion-label stacked>Giờ</ion-label>
+              <ion-input type="text" formControlName="matchHour"></ion-input>
+            </ion-item>
+          </ion-item-group>
+
+          <ion-item-group>
+            <ion-item-divider color="light">Cần tìm</ion-item-divider>
+            <ion-item>
+              <ion-label stacked>Trình</ion-label>
+              <ion-select formControlName="levelId" >
+                <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item text-wrap>
+              <ion-label stacked>Lời nhắn</ion-label>
+              <ion-textarea formControlName="message"></ion-textarea>
+            </ion-item>
+          </ion-item-group>
+
+          <ion-item-group>
+            <ion-item-divider color="light">Liên hệ</ion-item-divider>
+            <ion-item>
+              <ion-label stacked>SĐT</ion-label>
+              <ion-input type="number" formControlName="phoneNumber"></ion-input>
+            </ion-item>
+          </ion-item-group>
         </form>
       </ion-list>
+
+      <ion-fab right bottom>
+          <ion-buttons end>
+            <button ion-fab color="primary" (click)="logForm()" [disabled]="!findingMatchForm.valid">
+              <ion-icon name="send"></ion-icon>
+            </button>
+          </ion-buttons>
+      </ion-fab>
+
     </ion-content>
   `,
 })
 export class ModalAddFindingMatch {
-  private findingMatchForm: FormGroup;
+  private findingMatchForm : FormGroup;
   // data
-  cities: any;
-  levels: any;
-  districts: any;
-  currentDate: string;
-  districtsByCity: any;
+    cities          : any;
+    levels          : any;
+    districts       : any;
+    districtsByCity : any;
 
-  filterData: any;
-  selectedCity: any;
+    currentDate     : string;
+    expiredDate     : string;
+    maxDate         : string;
+    minDate         : string;
+    
+    filterData      : any;
+    selectedCity    : any;
 
   constructor(
-    public params: NavParams,
-    public apiService: ApiService,
-    public viewCtrl: ViewController,
-    public formBuilder: FormBuilder,
+    public params      : NavParams,
+    public apiService  : ApiService,
+    public formBuilder : FormBuilder,
+    public viewCtrl    : ViewController,
   ) {
-    this.currentDate     = new Date().toISOString();
+    let now     = new Date();
+    let expired = new Date();
+    let max     = new Date();
+
+    expired.setDate(expired.getDate() + this.apiService.expiredDays);
+    max.setDate(max.getDate() + this.apiService.aheadDays);
+      
+    this.minDate     = now.toISOString();
+    this.maxDate     = max.toISOString();
+    this.currentDate = now.toISOString();
+    this.expiredDate = expired.toISOString().substring(0, 10);
 
     this.levels          = this.params.get('levels');
     this.cities          = this.params.get('cities');
@@ -477,6 +438,7 @@ export class ModalAddFindingMatch {
       message       : [''],
       matchHour     : [''],
       matchDate     : [this.currentDate],
+      expiredDate   : [this.expiredDate],
       phoneNumber   : ['0974796654', Validators.required],
     });
 
@@ -489,9 +451,7 @@ export class ModalAddFindingMatch {
   async logForm() {
     await this.apiService.addFindingMatch(this.findingMatchForm.value)
       .then(data => {
-        console.log('added data ', data);
         this.viewCtrl.dismiss(data);
-
       }, error => console.log(error));
   }
   dismiss() {

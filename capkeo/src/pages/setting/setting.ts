@@ -32,10 +32,10 @@ export class SettingPage {
   districtsByCity: any;
   positions: any;
   levels: any;
-  properties: any;
   filterData: any;
 
-  player: any;
+  currentPlayer: any;
+  settingSegment: string;
 
   constructor(
     public navParams: NavParams,
@@ -45,47 +45,44 @@ export class SettingPage {
     public nativeStorage : NativeStorage,
     ) 
   {
+    this.settingSegment = "notifications";
+    
     this.typeFindingTeam   = this.apiService.typeFindingTeam;
     this.typeFindingMatch  = this.apiService.typeFindingMatch;
     this.typeFindingPlayer = this.apiService.typeFindingPlayer;
-    this.player = {};
+
+    this.levels          = navParams.data.levels;
+    this.cities          = navParams.data.cities;
+    this.positions       = navParams.data.positions;
+    this.districtsByCity = navParams.data.districtsByCity;
+    this.currentPlayer   = navParams.data.currentPlayer;
+    this.filterData      = navParams.data.defaultFilterData;
+
+    this.isReceiveFindingTeam   = this.currentPlayer.is_receive_player_finding_team;
+    this.isReceiveFindingMatch  = this.currentPlayer.is_receive_team_finding_match;
+    this.isReceiveFindingPlayer = this.currentPlayer.is_receive_team_finding_player;
+
+
   } 
 
   async ionViewDidLoad() 
   {
     this.apiService.handleLoading();
-    await this.getLocations();
-    await this.getPositions();
-    await this.getLevels();
-    await this.getAllProperties();
-
-    await this.getPlayer();
     await this.updateDistrict();
   }
 
-  async getPlayer()
-  {
-    await this.apiService.getPlayer()
-    .then((data: any) => {
-      this.player = data;
-      this.isReceiveFindingTeam   = data.is_receive_player_finding_team;
-      this.isReceiveFindingMatch  = data.is_receive_team_finding_match;
-      this.isReceiveFindingPlayer = data.is_receive_team_finding_player;
-    }, error =>console.log(error)
-    );
-  }
 
   updateDistrict() 
   {
-    if(this.player.city_id) {
-      this.districts  = this.districtsByCity[this.player.city_id].districts;
+    if(this.currentPlayer.city_id) {
+      this.districts  = this.districtsByCity[this.currentPlayer.city_id].districts;
     }
   }
 
   saveProfile()
   {
     this.apiService.handleLoading();
-    this.apiService.updatePlayer(this.player)
+    this.apiService.updatePlayer(this.currentPlayer)
     .then((data: any) => {
       this.apiService.handlePostResult(data.code);
     }, error => console.log(error));
@@ -93,23 +90,24 @@ export class SettingPage {
 
   async toggleChange(type) 
   {
+    // this.apiService.handleLoading();
     switch (type) 
     {
       case this.typeFindingTeam:
-        this.player.is_receive_player_finding_team = this.isReceiveFindingTeam;
+        this.currentPlayer.is_receive_player_finding_team = this.isReceiveFindingTeam;
         if(this.isReceiveFindingTeam) this.openFindingPlayerSettingModal(type);
         break;
       case this.typeFindingMatch:
-        this.player.is_receive_team_finding_match = this.isReceiveFindingMatch;
+        this.currentPlayer.is_receive_team_finding_match = this.isReceiveFindingMatch;
         if(this.isReceiveFindingMatch) this.openFindingPlayerSettingModal(type);
         break;
       case this.typeFindingPlayer:
-        this.player.is_receive_team_finding_player = this.isReceiveFindingPlayer;
+        this.currentPlayer.is_receive_team_finding_player = this.isReceiveFindingPlayer;
         if(this.isReceiveFindingPlayer) this.openFindingPlayerSettingModal(type);
         break;
     }
 
-    this.apiService.updatePlayer(this.player)
+    this.apiService.updatePlayer(this.currentPlayer)
     .then((data: any) => {
       this.apiService.handlePostResult(data.code);
     }, error => console.log(error));
@@ -125,8 +123,6 @@ export class SettingPage {
       env.notificationSetting = data;
     }, error => console.log(error));
 
-    console.log(this.notificationSetting);
-
     let data = {cities: this.cities, districtsByCity: this.districtsByCity, 
       positions: this.positions, levels: this.levels, filterData: this.filterData, type: type, 
       notificationSetting: this.notificationSetting
@@ -139,7 +135,6 @@ export class SettingPage {
         let notificationSetting = data;
         env.apiService.saveNotificationSetting(notificationSetting)
         .then((data: any) => {
-          console.log('saved notificationSetting', data);
           env.apiService.handlePostResult(data.code);
         }, error => console.log(error));
       }
@@ -151,61 +146,6 @@ export class SettingPage {
   {
     this.apiService.call(phoneNumber);
   }
-  // get data
-  getLocations() {
-    this.apiService.getLocations()
-    .then(data => {
-      this.cities = data['results']['cities'];
-      this.districtsByCity  = data['results']['districts_by_city'];
-    });
-  }
-  getPositions() {
-    this.apiService.getProperties('position')
-    .then(data => {
-      this.positions = data;
-    });
-  }
-
-  getLevels() {
-    this.apiService.getProperties('level')
-    .then(data => {
-      this.levels = data;
-    });
-  }
-  getAllProperties() {
-    this.apiService.getAllProperties()
-    .then(data => {
-      this.properties = data;
-    });
-  }
-
-
-  // getLocations() {
-  //   this.nativeStorage.getItem('locations')
-  //   .then(data => {
-  //     this.cities = data['results']['cities'];
-  //     this.districtsByCity  = data['results']['districts_by_city'];
-  //   });
-  // }
-  // getPositions() {
-  //   this.nativeStorage.getItem('positions')
-  //   .then(data => {
-  //     this.positions = data;
-  //   });
-  // }
-
-  // getLevels() {
-  //   this.nativeStorage.getItem('levels')
-  //   .then(data => {
-  //     this.levels = data;
-  //   });
-  // }
-  // getAllProperties() {
-  //   this.nativeStorage.getItem('allProperties')
-  //   .then(data => {
-  //     this.properties = data;
-  //   });
-  // }
 }
 
 @Component({
@@ -213,53 +153,50 @@ export class SettingPage {
     <ion-header>
       <ion-toolbar color="primary">
         <ion-title>
-          Loc Doi
+          Tùy chọn nhận thông báo
         </ion-title>
         <ion-buttons start>
           <button ion-button (click)="dismiss()">
-            <span ion-text color="primary" showWhen="ios">Cancel</span>
+            <span ion-text color="light" showWhen="ios">Cancel</span>
             <ion-icon name="md-close" showWhen="android,windows"></ion-icon>
           </button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-card>
-        <ion-card-header>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list>
-            <ion-item>
-              <ion-label stacked>Thành Phố</ion-label>
-              <ion-select [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
-                <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
-              </ion-select>
-            </ion-item>
-            <ion-item>
-              <ion-label stacked>Quận/Huyện</ion-label>
-              <ion-select multiple="true" [(ngModel)]="selectedDistricts">
-                <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
-              </ion-select>
-            </ion-item>
-            <ion-item *ngIf="type !== this.apiService.typeFindingMatch">
-              <ion-label stacked>Vị Trí</ion-label>
-              <ion-select multiple="true" [(ngModel)]="selectedPositions" >
-                <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
-              </ion-select>
-            </ion-item>
-            <ion-item>
-              <ion-label stacked>Trình</ion-label>
-              <ion-select multiple="true" [(ngModel)]="selectedLevels">
-                <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
-              </ion-select>
-            </ion-item>
-            <ion-item>
-                <button ion-button full (click)="save()">Lưu</button>
-            </ion-item>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
-
+      <ion-list>
+        <ion-item>
+          <ion-label stacked>Thành Phố</ion-label>
+          <ion-select [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
+            <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Quận/Huyện</ion-label>
+          <ion-select multiple="true" [(ngModel)]="selectedDistricts">
+            <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="type !== this.apiService.typeFindingMatch">
+          <ion-label stacked>Vị Trí</ion-label>
+          <ion-select multiple="true" [(ngModel)]="selectedPositions" >
+            <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Trình</ion-label>
+          <ion-select multiple="true" [(ngModel)]="selectedLevels">
+            <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+      <ion-fab right bottom>
+        <ion-buttons end>
+          <button ion-fab color="primary" (click)="save()">
+            <ion-icon name="send"></ion-icon>
+          </button>
+        </ion-buttons>
+      </ion-fab>
     </ion-content>
   `,
 })
@@ -286,38 +223,33 @@ export class FindingPlayerSettingModal {
     public apiService: ApiService,
     public viewCtrl: ViewController,
   ) {
-    this.currentDate     = new Date().toISOString();
-
-    this.levels          = this.params.get('levels');
-    this.cities          = this.params.get('cities');
-    this.positions       = this.params.get('positions');
-    this.districtsByCity = this.params.get('districtsByCity');
+    this.currentDate         = new Date().toISOString();
+    this.levels              = this.params.get('levels');
+    this.cities              = this.params.get('cities');
+    this.positions           = this.params.get('positions');
+    this.districtsByCity     = this.params.get('districtsByCity');
     this.notificationSetting = this.params.get('notificationSetting');
 
+    this.type       = this.params.get('type');
+    this.filterData = this.params.get('filterData');
     console.log(this.notificationSetting);
 
-    this.type      = this.params.get('type');
-    this.filterData      = this.params.get('filterData');
-
-    this.selectedCity = this.notificationSetting.cityId;
+    this.selectedCity      = (this.notificationSetting.cityId && this.notificationSetting.cityId.length) ? this.notificationSetting.cityId : this.filterData.cityId;
     this.updateDistrict();
-    this.selectedPositions = this.notificationSetting.positionIds;
-    this.selectedLevels = this.notificationSetting.levelIds;
-
-    this.selectedDistricts = this.notificationSetting.districtIds;
+    this.selectedLevels    = this.notificationSetting.levelIds.length ? this.notificationSetting.levelIds : this.filterData.levelIds;
+    this.selectedDistricts = this.notificationSetting.districtIds.length ? this.notificationSetting.districtIds : this.filterData.districtIds;
   }
   updateDistrict() {
     if(this.selectedCity) {
       this.districts = this.districtsByCity[this.selectedCity].districts;
     }
-
-    // this.selectedDistrict = this.filterData.districtIds;
   }
 
   save() {
     let data = {'cityId': this.selectedCity, 'districtIds': this.selectedDistricts, 'positionIds': this.selectedPositions, 'levelIds': this.selectedLevels, type: this.type};
     this.viewCtrl.dismiss(data);
   }
+
   dismiss() {
     this.viewCtrl.dismiss();
   }

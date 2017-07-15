@@ -14,3 +14,36 @@
     }
  
 }
+.tabs-md .tab-button {
+    min-height: 3.6rem;
+}
+
+.toolbar-md {
+    min-height: 32px;
+}
+
+.datetime-text,
+.text-input,
+.select-text {
+  font-size: 1.4rem;
+}
+.item-ios h2,
+h2,
+ion-label {
+  font-size: 1.4rem;
+}
+
+.toolbar-title-md {
+  font-size: 1.5rem;
+  font-weight: 400;
+
+}
+ion-select {
+  max-width: 100%;
+}
+
+textarea {
+  max-width: 100%;
+  width: 100%;
+  height: 10vh;
+}

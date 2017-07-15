@@ -25,6 +25,8 @@ export class FindingStadiumPage {
   selectedCity: any;
   selectedDistrict: any;
 
+  filterData: any;
+
   constructor(
     public platform   : Platform, 
     public navParams  : NavParams, 
@@ -38,16 +40,16 @@ export class FindingStadiumPage {
   async ionViewDidLoad() 
   {
     this.apiService.handleLoading();
-    let filterData = this.apiService.getDefaultFilter();
-    this.selectedCity = filterData.cityId;
 
-    await this.getLocations();
-    await this.updateDistrict();
-    this.selectedDistrict = filterData.districtIds;
+     this.cities           = this.navParams.data.cities;
+     this.districtsByCity  = this.navParams.data.districtsByCity;
+     this.filterData       = this.navParams.data.defaultFilterData;
+     this.selectedCity     = this.filterData.cityId;
+     await this.updateDistrict();
+     this.selectedDistrict = this.filterData.districtIds;
     await this.getFindingStadiums();
   }
   
-
   updateDistrict() 
   {
     if(this.selectedCity) {
@@ -64,16 +66,7 @@ export class FindingStadiumPage {
   {
     await this.apiService.getFindingStadiums(this.selectedDistrict).
     then(data => {
-      console.log(data);
       this.stadiums = data;
-    });
-  }
-  async getLocations() 
-  {
-    await this.apiService.getLocations()
-    .then(data => {
-      this.cities = data['results']['cities'];
-      this.districtsByCity  = data['results']['districts_by_city'];
     });
   }
 
@@ -89,38 +82,32 @@ export class FindingStadiumPage {
     <ion-header>
       <ion-toolbar color="primary">
         <ion-title>
-          Thong Tin San
+          Chi tiết
         </ion-title>
         <ion-buttons start>
           <button ion-button (click)="dismiss()">
-            <span ion-text color="primary" showWhen="ios">Cancel</span>
+            <span ion-text color="light" showWhen="ios">Cancel</span>
             <ion-icon name="md-close" showWhen="android,windows"></ion-icon>
           </button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-card>
-        <ion-card-header>  
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list>
-            <ion-item>
-              <h2>Tên</h2>
-              <p>{{stadium.name}}</p>
-            </ion-item>
-            <ion-item>
-              <h2>Địa Chỉ</h2>
-              <p>{{stadium.address}}</p>
-            </ion-item>
-            <ion-item>
-              <h2>SĐT</h2>
-              <p>{{stadium.phone_number}}</p>
-              <ion-icon item-end name="call" (click)="call(stadium.phone_number)"></ion-icon>
-            </ion-item>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
+      <ion-list>
+        <ion-item>
+          <label>Sân</label>
+          <p>{{stadium.name}}</p>
+        </ion-item>
+        <ion-item>
+          <label>Địa Chỉ</label>
+          <p>{{stadium.address}}</p>
+        </ion-item>
+        <ion-item>
+          <label>SĐT</label>
+          <p>{{stadium.phone_number}}</p>
+          <ion-icon item-end name="call" (click)="call(stadium.phone_number)"></ion-icon>
+        </ion-item>
+      </ion-list>
     </ion-content>
   `,
 })
@@ -143,8 +130,8 @@ export class ModalStadiumDetail {
     this.viewCtrl.dismiss();
   }
 
-  call(phoneNumber)
+  call(number)
   {
-    this.apiService.call(phoneNumber);
+    this.apiService.call(number);
   }
 }
