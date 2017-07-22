@@ -5,6 +5,7 @@ import { NativeStorage } from '@ionic-native/native-storage';
 import { IonicPage, NavController, NavParams, MenuController } from 'ionic-angular';
 
 import { NotificationPage } from '../notification/notification';
+import { HomePage } from '../home/home';
 
 import { ApiService } from '../../providers/api-service/api-service';
 
@@ -90,29 +91,26 @@ export class LoginPage {
         //now we have the users info, let's save it in the NativeStorage
         env.nativeStorage.setItem('user',
         {
-          name: user.name,
-          email: user.email,
-          picture: user.picture,
-          accessToken: accessToken,
+          name        : user.name,
+          email       : user.email,
+          accessToken : accessToken,
+          picture     : user.picture,
+          socialType  : env.apiService.socialTypeFacebook,
         })
         .then(
           () => {
-            env.apiService.sendAuthLogin(user.email, user.name, accessToken).
-            then(data => {
-              let result = <any>{};
-              result = data;
-              if(result.code === 200 ){
-                // sucesss
-                env.nativeStorage.setItem('jwtToken', result.token);
-                // alert('received token' + env.nativeStorage.getItem('jwtToken');
+            env.apiService.sendAuthLogin(env.apiService.socialTypeFacebook, user.email, user.name, accessToken).
+            then((data: any) => {
+              if(data.code === 200 ){
+                env.nativeStorage.setItem('jwtToken', data.token);
+                env.nav.setRoot(HomePage);
               }
             });
           }, 
           error => {
-            console.log(error);
+            console.log('error when login:', error);
           }
         );
-        env.nav.setRoot(NotificationPage);
       })
     }, function (error) {
       console.log(error);
@@ -154,21 +152,26 @@ export class LoginPage {
       'offline': true
     })
       .then(function (user) {
-        // loading.dismiss();
-
         env.nativeStorage.setItem('user', {
-          name: user.displayName,
-          email: user.email,
-          picture: user.imageUrl
+          name       : user.displayName,
+          email      : user.email,
+          picture    : user.imageUrl,
+          socialType : env.apiService.socialTypeGoogle,
         })
         .then(function(){
-          // env.apiService.sendAuthLogin(user.email, user.name);
-          nav.setRoot(NotificationPage);
+          env.apiService.sendAuthLogin(env.apiService.socialTypeGoogle, user.email, user.displayName, user.idToken).
+          then((data: any) => {
+            if(data.code === 200 ){
+              env.nativeStorage.setItem('jwtToken', data.token).
+              then(data => {
+                env.nav.setRoot(HomePage);
+              });
+            }
+          });
         }, function (error) {
           console.log(error);
         })
       }, function (error) {
-        alert(error);
         console.log(error);
         // loading.dismiss();
       });

@@ -58,11 +58,11 @@ export class HomePage {
     public nativeStorage: NativeStorage, 
     ) 
   {
-    // this.sendRegistrationId();
+    
     this.tabTeam         = TeamPage;
+    this.tabSearch       = SearchPage;
     this.tabSetting      = SettingPage;
     this.tabNotification = NotificationPage;
-    this.tabSearch       = SearchPage;
 
 
     events.subscribe('read:notification', () => {
@@ -89,12 +89,19 @@ export class HomePage {
   {
     this.loading = this.apiService.createLoading();
     this.loading.present();
+
+    if(! this.apiService.isTesting) {
+      this.sendRegistrationId();
+    }
+
+
     await this.countUnreadNotifications()
 
     await this.getLocations();
     await this.getLevels();
     await this.getPositions();
     await this.getPlayer();
+
 
     this.defaultParams = {
       cities            : this.cities, 
@@ -104,6 +111,7 @@ export class HomePage {
       districtsByCity   : this.districtsByCity, 
       defaultFilterData : this.defaultFilterData,
     };
+    console.log(this.defaultParams);
     // this.loadMap();
     this.loading.dismiss();
   }

@@ -32,13 +32,13 @@ export class MyApp {
   pages: Array<{ title: string, component: any }>;
 
   constructor(
-    public push: Push,
-    public platform: Platform, 
-    public statusBar: StatusBar, 
-    public apiService: ApiService,
-    public alertCtrl: AlertController,
-    public splashScreen: SplashScreen, 
-    private nativeStorage: NativeStorage
+    public push           : Push,
+    public platform       : Platform, 
+    public statusBar      : StatusBar, 
+    public apiService     : ApiService,
+    private nativeStorage : NativeStorage,
+    public splashScreen   : SplashScreen, 
+    public alertCtrl      : AlertController,
   ) {
 
     // this.apiService.sendAuthLogin('anhnt.uit.is@gmail.com', 'Anh');
@@ -70,7 +70,7 @@ export class MyApp {
       // Here we will check if the user is already logged in
       // because we don't want to ask users to log in each time they open the app
       // --- just for development
-      env.nativeStorage.remove('user');
+      // env.nativeStorage.remove('user');
 
       if(this.apiService.isTesting) {
         env.nav.setRoot(HomePage);
@@ -79,7 +79,7 @@ export class MyApp {
           .then( function (data) {
             // user is previously logged and we have his data
             // we will let him access the app
-            env.apiService.sendAuthLogin(data.email, data.name, data.accessToken).
+            env.apiService.sendAuthLogin(data.socialType, data.email, data.name, data.accessToken).
             then((data: any) => {
               let result = <any>{};
               result = data;
@@ -90,7 +90,7 @@ export class MyApp {
               }
             });
 
-            env.nav.setRoot(NotificationPage);
+            env.nav.setRoot(HomePage);
             env.splashScreen.hide();
           }, function (error) {
             //we don't have the user data so we will ask him to log in
@@ -117,8 +117,7 @@ export class MyApp {
     const options: PushOptions = {
       android: {
         senderID: "546727817471",
-        icon : "ic_stat_beach_access",
-        iconColor: "red"
+        sound: true,
       },
       ios: {
         alert: "true",
@@ -143,7 +142,7 @@ export class MyApp {
       //if user using app and push notification comes
       if (data.additionalData.foreground) {
         // application open, show toast
-        this.apiService.presentToast(data.message);
+        this.apiService.presentToast(data.message, 5000);
 
         // // if application open, show popup
         // let confirmAlert = this.alertCtrl.create({
@@ -164,9 +163,9 @@ export class MyApp {
       } else {
         //if user NOT using app and push notification comes
         //TODO: Your logic on click of push notification directly
-        alert(data.message);
+        // alert(data.message);
         // this.nav.push(DetailsPage, {message: data.message});
-        alert("Push notification clicked");
+        // alert("Push notification clicked");
       }
     });
 

@@ -14,29 +14,31 @@ import 'rxjs/add/operator/map';
 */
 @Injectable()
 export class ApiService {
-  public data: any;
-  public apiDomain: string;
-  public postResult: any;
-  jwtToken: string;
-  public loading: any;
-
+  public data            : any;
+  public apiDomain       : string;
+  public postResult      : any;
+  jwtToken               : string;
+  public loading         : any;
+  
   // message 
-  public processedOkMsg: string;
-  public processedErrMsg: string;
+  public processedOkMsg  : string;
+  public processedErrMsg : string;
   // constant
-  public loadingTimeout: number;
-
-  typeFindingTeam: number;
-  typeFindingMatch: number;
-  typeFindingPlayer: number;
-  typeJoinTeam: number;
-  typeInviteMember: number;
-
-  resultCodeSuccess: number;
-  resultCodeErr: number;
-
-  expiredDays: number = 12;
-  aheadDays: number = 30;
+  public loadingTimeout  : number;
+  
+  typeFindingTeam        : number;
+  typeFindingMatch       : number;
+  typeFindingPlayer      : number;
+  typeJoinTeam           : number;
+  typeInviteMember       : number;
+  
+  socialTypeGoogle       : number = 1;
+  socialTypeFacebook     : number = 2;
+  resultCodeSuccess      : number;
+  resultCodeErr          : number;
+  
+  expiredDays            : number = 12;
+  aheadDays              : number = 30;
 
 
   // for testing only
@@ -52,19 +54,19 @@ export class ApiService {
     this.apiDomain         = 'http://192.168.2.81/';
     
     // init message
-    this.processedOkMsg    = 'Đã thực hiện thành công :)'; 
-    this.processedErrMsg   = 'Có lỗi xảy ra :|. Xin thử lại :)'
+    this.processedOkMsg    = 'Đã thực hiện thành công.'; 
+    this.processedErrMsg   = 'Có lỗi xảy ra. Xin thử lại!'
 
     // init constant
-    this.loadingTimeout    = 3000;
-    this.typeFindingPlayer = 1;
-    this.typeFindingTeam   = 2;
-    this.typeFindingMatch  = 3;
-    this.typeJoinTeam      = 4;
-    this.typeInviteMember  = 5;
+    this.loadingTimeout     = 3000;
+    this.typeFindingPlayer  = 1;
+    this.typeFindingTeam    = 2;
+    this.typeFindingMatch   = 3;
+    this.typeJoinTeam       = 4;
+    this.typeInviteMember   = 5;
     
-    this.resultCodeSuccess = 200;
-    this.resultCodeErr     = 500;
+    this.resultCodeSuccess  = 200;
+    this.resultCodeErr      = 500;
     
     // for testing only
     this.isTesting         = false;
@@ -97,11 +99,11 @@ export class ApiService {
     this.presentToast(msg);
   }
 
-  presentToast(message) 
+  presentToast(message, time = 3000) 
   {
     let toast = this.toastCtrl.create({
       message: message,
-      duration: 3000,
+      duration: time,
       position: 'top'
     });
 
@@ -148,10 +150,10 @@ export class ApiService {
   }
 
   // login handling
-  sendAuthLogin(email: string, name: string, accessToken: string) 
+  sendAuthLogin(socialType: number, email: string, name: string, accessToken: string) 
   {
     let segment = 'auth/login';
-    let auth = {email: email, name: name, inputToken: accessToken};
+    let auth = {socialType: socialType, email: email, name: name, inputToken: accessToken};
     return this.callPostApi(segment, auth);    
   }
   async sendRegistrationId(email, registrationId) 
@@ -398,10 +400,12 @@ export class ApiService {
       }
       );
 
-    if(this.isTesting) {
-
+    if(this.isTesting) 
+    {
+      // lenkeoapp
+      let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4yLjgxL2F1dGgvbG9naW4iLCJpYXQiOjE1MDAyNzQwNTIsImV4cCI6MTUwMzg3NDA1MiwibmJmIjoxNTAwMjc0MDUyLCJqdGkiOiI1c1FLRG91VjE4N3ZhRTZwIiwic3ViIjoxfQ.qP2pUVxGRsod3LB2tWiGwDOR1nuYCjYN19ifgVLWNKw';
       // anh nguyen
-      let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4yLjgxL2F1dGgvbG9naW4iLCJpYXQiOjE1MDAwMjM2NTgsImV4cCI6MTUwMzYyMzY1OCwibmJmIjoxNTAwMDIzNjU4LCJqdGkiOiJzQWxFY1lDcmFlUnlNaVBSIiwic3ViIjo0fQ.QHiM0TF86CTWqytSFk4Nxh70lvWUmnqgC7uBaBBC_TM';
+      // let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4yLjgxL2F1dGgvbG9naW4iLCJpYXQiOjE1MDAwMjM2NTgsImV4cCI6MTUwMzYyMzY1OCwibmJmIjoxNTAwMDIzNjU4LCJqdGkiOiJzQWxFY1lDcmFlUnlNaVBSIiwic3ViIjo0fQ.QHiM0TF86CTWqytSFk4Nxh70lvWUmnqgC7uBaBBC_TM';
      
       // user 1
       // token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4yLjgxL2F1dGgvbG9naW4iLCJpYXQiOjE1MDAwMzA2MzUsImV4cCI6MTUwMzYzMDYzNSwibmJmIjoxNTAwMDMwNjM1LCJqdGkiOiJGUmtlaEUwRjJNZVhyTzB4Iiwic3ViIjoxfQ.Av5pc16eoDgnzkQ4muwTp9v7CPzgib0b0AmhjQNxojM';

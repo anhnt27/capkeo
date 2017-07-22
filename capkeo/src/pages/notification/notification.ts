@@ -60,7 +60,7 @@ export class NotificationPage {
 
   async ionViewDidLoad() {
     this.apiService.handleLoading();
-    // await this.sendRegistrationId();
+    
     await this.getNotifications();
   }
 
@@ -123,30 +123,6 @@ export class NotificationPage {
     }
   }
 
-
-  // openDetailModal(playerId) 
-  // {
-  //   this.apiService.getPlayerById(playerId).
-  //   then((data: any) =>{
-  //     let modalParam = {player: data};
-      
-  //     let modal = this.modalCtrl.create(ModalPlayerDetail, modalParam);
-  //     modal.present();
-  //   });
-  // }
-
-  // openDetailModal(teamId) 
-  // {
-  //   this.apiService.getTeamById(teamId).
-  //   then((data: any) =>{
-  //     let modalParam = {team: data};
-      
-  //     let modal = this.modalCtrl.create(ModalTeamDetail, modalParam);
-  //     modal.present();
-  //   });
-  // }
-
-
   openDetailModal(modalName, data) {
     let modal = this.modalCtrl.create(modalName, data);
     modal.onDidDismiss((data: any) => {
@@ -165,24 +141,7 @@ export class NotificationPage {
     );
   }
 
-  async sendRegistrationId() {
-    let env = this;
-    await this.nativeStorage.getItem('user')
-      .then(
-      data => {
-        env.email = data.email;
-      },
-      error => console.error(error)
-      );
-    await this.nativeStorage.getItem('registrationId')
-      .then(
-      data => {
-        env.registrationId = data.value
-      },
-      error => console.error(error)
-      );
-    await this.apiService.sendRegistrationId(this.email, this.registrationId);
-  }
+  
 }
 
 

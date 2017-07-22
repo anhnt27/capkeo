@@ -34,6 +34,10 @@ export class FindingMatchPage {
   filterData        : any;
   defaultFilterData : any;
 
+  currentPlayer     : any;
+
+  notificationSetting : any;
+
   constructor(
     public platform      : Platform, 
     public navParams     : NavParams, 
@@ -48,18 +52,24 @@ export class FindingMatchPage {
 
 async ionViewDidLoad() 
   {
+    console.log(this.navParams.data);
     if(this.navParams.data) {
       this.cities            = this.navParams.data.cities;
       this.levels            = this.navParams.data.levels;
       this.districtsByCity   = this.navParams.data.districtsByCity;
       this.defaultFilterData = this.navParams.data.defaultFilterData;
       this.filterData        = this.navParams.data.defaultFilterData;
+      this.currentPlayer     = this.navParams.data.currentPlayer;
     } 
 
     //will be moved to home.
     this.apiService.handleLoading();
     await this.getFindingMatchs();
+    this.getNotificationSetting();
+
+
   }
+
   async doRefresh(refresher)
   {
     await this.getFindingMatchs();
@@ -75,9 +85,24 @@ async ionViewDidLoad()
     });
   }
 
+  async getNotificationSetting()
+  {
+    await this.apiService.getNotificationSetting(this.apiService.typeFindingMatch)
+    .then(data => {
+      this.notificationSetting = data;
+    }, error => console.log(error));
+
+  }
+
   // open modal
   async openAddModal(){
-    let data = {cities: this.cities, districtsByCity: this.districtsByCity, levels: this.levels, filterData: this.defaultFilterData};
+    let data = {
+      cities          : this.cities, 
+      levels          : this.levels, 
+      currentPlayer   : this.currentPlayer, 
+      districtsByCity : this.districtsByCity, 
+      filterData      : this.defaultFilterData, 
+      };
     let modal = this.modalCtrl.create(ModalAddFindingMatch, data);
     modal.onDidDismiss((data: any) => {
       if(data) {
@@ -97,7 +122,13 @@ async ionViewDidLoad()
   }
 
   openFilterModal() {
-    let data = {cities: this.cities, districtsByCity: this.districtsByCity, levels: this.levels, filterData: this.filterData};
+    let data = {
+      cities              : this.cities, 
+      levels              : this.levels, 
+      filterData          : this.filterData,
+      districtsByCity     : this.districtsByCity, 
+      notificationSetting : this.notificationSetting,
+    };
     let modal = this.modalCtrl.create(ModalFilterFindingMatch, data);
 
     modal.onDidDismiss(data => {
@@ -160,7 +191,7 @@ async ionViewDidLoad()
         <p item-end>{{findingMatch.phone_number}}</p>
         <ion-icon name="call" item-end (click)="call(findingMatch.phone_number)" smaill></ion-icon>
       </ion-item>
-      <ion-item>
+      <ion-item *ngIf="! findingMatch.by_admin">
         <label>Chi tiết đội bóng</label>
         <button ion-button clear item-end (click)="openDetailModal(findingMatch.team_id)">Xem</button>
       </ion-item>
@@ -259,20 +290,24 @@ export class ModalFilterFindingMatch {
   
   filterData       : any;
 
+  notificationSetting: any;
+
   constructor(
     public params     : NavParams,
     public apiService : ApiService,
     public viewCtrl   : ViewController,
   ) {
-    this.levels           = this.params.get('levels');
-    this.cities           = this.params.get('cities');
-    this.districtsByCity  = this.params.get('districtsByCity');
-    this.filterData       = this.params.get('filterData');
+    this.levels              = this.params.get('levels');
+    this.cities              = this.params.get('cities');
+    this.districtsByCity     = this.params.get('districtsByCity');
+    this.filterData          = this.params.get('filterData');
     
-    this.selectedCity     = this.filterData.cityId;
+    this.notificationSetting = this.params.get('notificationSetting');
+
+    this.selectedCity        = this.notificationSetting.cityId;
     this.updateDistrict();
-    this.selectedLevel    = this.filterData.levelIds;
-    this.selectedDistrict = this.filterData.districtIds;
+    this.selectedLevel       = this.notificationSetting.levelIds;
+    this.selectedDistrict    = this.notificationSetting.districtIds;
   }
 
   updateDistrict() 
@@ -344,6 +379,10 @@ export class ModalFilterFindingMatch {
           <ion-item-group>
             <ion-item-divider color="light">Thời gian</ion-item-divider>
             <ion-item>
+              <ion-label>Đã đặt sân</ion-label>
+              <ion-toggle formControlName="isBooked"></ion-toggle>
+            </ion-item>
+            <ion-item *ngIf="findingMatchForm.value.isBooked">
               <ion-label stacked>Ngày</ion-label>
               <ion-datetime displayFormat="DDDD, D MMMM" pickerFormat="MMMM D, YYYY" [(min)]="minDate" [(max)]="maxDate" formControlName="matchDate"></ion-datetime>
             </ion-item>
@@ -369,6 +408,10 @@ export class ModalFilterFindingMatch {
 
           <ion-item-group>
             <ion-item-divider color="light">Liên hệ</ion-item-divider>
+            <ion-item>
+              <ion-label stacked>Tên</ion-label>
+              <ion-input type="text" formControlName="contactName"></ion-input>
+            </ion-item>
             <ion-item>
               <ion-label stacked>SĐT</ion-label>
               <ion-input type="number" formControlName="phoneNumber"></ion-input>
@@ -404,6 +447,7 @@ export class ModalAddFindingMatch {
     filterData      : any;
     selectedCity    : any;
 
+    currentPlayer   : any;
   constructor(
     public params      : NavParams,
     public apiService  : ApiService,
@@ -421,24 +465,30 @@ export class ModalAddFindingMatch {
     this.maxDate     = max.toISOString();
     this.currentDate = now.toISOString();
     this.expiredDate = expired.toISOString().substring(0, 10);
-
+    
     this.levels          = this.params.get('levels');
     this.cities          = this.params.get('cities');
     this.districtsByCity = this.params.get('districtsByCity');
-
+    
     this.filterData      = this.params.get('filterData');
-
-    this.districts = this.districtsByCity[this.filterData.cityId].districts;
+    
+    this.currentPlayer   = this.params.get('currentPlayer');
+    
+    this.selectedCity    = this.filterData.cityId;
+    this.updateDistrict();
 
     this.findingMatchForm = this.formBuilder.group({
       cityId        : [this.filterData.cityId],
-      districtIds    : [this.filterData.districtIds, Validators.required],
+      districtIds   : [this.filterData.districtIds, Validators.required],
       levelId       : [this.filterData.levelIds, Validators.required],
       address       : [''],
       message       : [''],
+      isBooked      : [true],
       matchHour     : [''],
       matchDate     : [this.currentDate],
+      contactName   : [this.currentPlayer.name],
       expiredDate   : [this.expiredDate],
+
       phoneNumber   : ['0974796654', Validators.required],
     });
 

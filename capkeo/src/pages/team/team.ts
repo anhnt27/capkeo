@@ -79,6 +79,7 @@ export class TeamPage {
 
 
     // get param
+    console.log('tab team paramas:' , navParams.data);
     this.cities            = navParams.data.cities;
     this.levels            = navParams.data.levels;
     this.currentPlayer     = navParams.data.currentPlayer;

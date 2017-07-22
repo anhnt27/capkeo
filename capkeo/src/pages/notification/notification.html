@@ -19,7 +19,7 @@
     <p>Tùy chọn để nhận thông báo tìm kèo, cầu thủ, đội...</p>
   </ion-item>
   <ion-card>
-    <img src="https://scontent.fsgn4-1.fna.fbcdn.net/v/t31.0-8/19983865_1600428199991393_2685678728835854347_o.jpg?oh=d1ee33d0f72404bb0c29d316952b25b4&oe=59C8841E">
+    <!-- <img src="https://scontent.fsgn4-1.fna.fbcdn.net/v/t31.0-8/19983865_1600428199991393_2685678728835854347_o.jpg?oh=d1ee33d0f72404bb0c29d316952b25b4&oe=59C8841E"> -->
   </ion-card>
   <ion-list *ngIf="notifications.length > 0">
     <ion-card *ngFor="let notification of notifications" (click)="navigateToDetail(notification)" [ngClass]="{'read' : (notification.read_at), 'unread':(!notification.read_at)}">

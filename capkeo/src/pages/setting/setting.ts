@@ -27,21 +27,21 @@ export class SettingPage {
 
   notificationSetting: any;
 
-  cities: any;
-  districts: any;
-  districtsByCity: any;
-  positions: any;
-  levels: any;
-  filterData: any;
-
-  currentPlayer: any;
-  settingSegment: string;
+  cities          : any;
+  districts       : any;
+  districtsByCity : any;
+  positions       : any;
+  levels          : any;
+  filterData      : any;
+  
+  currentPlayer   : any;
+  settingSegment  : string;
 
   constructor(
-    public navParams: NavParams,
-    public apiService: ApiService,
-    public navCtrl: NavController, 
-    public modalCtrl: ModalController, 
+    public navParams     : NavParams,
+    public apiService    : ApiService,
+    public navCtrl       : NavController, 
+    public modalCtrl     : ModalController, 
     public nativeStorage : NativeStorage,
     ) 
   {
@@ -238,6 +238,7 @@ export class FindingPlayerSettingModal {
     this.updateDistrict();
     this.selectedLevels    = this.notificationSetting.levelIds.length ? this.notificationSetting.levelIds : this.filterData.levelIds;
     this.selectedDistricts = this.notificationSetting.districtIds.length ? this.notificationSetting.districtIds : this.filterData.districtIds;
+    this.selectedPositions = this.notificationSetting.positionIds.length ? this.notificationSetting.positionIds : this.filterData.positionIds;
   }
   updateDistrict() {
     if(this.selectedCity) {

@@ -40,7 +40,10 @@ export class FindingPlayerPage {
   minDate         : string;
 
   filterData: any;
+  currentPlayer     : any;
+
   defaultFilterData: any;
+  notificationSetting : any;
 
   constructor(
     public platform: Platform, 
@@ -60,6 +63,7 @@ export class FindingPlayerPage {
       this.cities            = this.navParams.data.cities;
       this.levels            = this.navParams.data.levels;
       this.positions         = this.navParams.data.positions;
+      this.currentPlayer     = this.navParams.data.currentPlayer;
       this.districtsByCity   = this.navParams.data.districtsByCity;
       this.defaultFilterData = this.navParams.data.defaultFilterData;
       this.filterData        = this.navParams.data.defaultFilterData;
@@ -67,6 +71,7 @@ export class FindingPlayerPage {
 
     this.apiService.handleLoading();
     await this.getFindingPlayers();
+    this.getNotificationSetting();
   }
 
   async doRefresh(refresher)
@@ -85,9 +90,25 @@ export class FindingPlayerPage {
     });
   }
 
+  async getNotificationSetting()
+  {
+    await this.apiService.getNotificationSetting(this.apiService.typeFindingPlayer)
+    .then(data => {
+      this.notificationSetting = data;
+    }, error => console.log(error));
+
+  }
+
   // open modal
   async openAddModal(){
-    let data = {cities: this.cities, districtsByCity: this.districtsByCity, positions: this.positions, levels: this.levels, filterData: this.defaultFilterData};
+    let data = {
+      cities          : this.cities, 
+      levels          : this.levels, 
+      positions       : this.positions, 
+      currentPlayer   : this.currentPlayer, 
+      districtsByCity : this.districtsByCity, 
+      filterData      : this.defaultFilterData,
+    };
     let modal = this.modalCtrl.create(ModalAddFindingPlayer, data);
     modal.onDidDismiss((data: any) => {
       if(data) {
@@ -107,7 +128,13 @@ export class FindingPlayerPage {
   }
 
   openFilterModal() {
-    let data = {cities: this.cities, districtsByCity: this.districtsByCity, positions: this.positions, levels: this.levels, filterData: this.filterData};
+    let data = {
+      cities              : this.cities, 
+      levels              : this.levels, 
+      positions           : this.positions, 
+      districtsByCity     : this.districtsByCity, 
+      notificationSetting : this.notificationSetting,
+    };
     let modal = this.modalCtrl.create(ModalFilterFindingPlayer, data);
 
     modal.onDidDismiss(data => {
@@ -177,7 +204,7 @@ export class FindingPlayerPage {
         <button ion-button clear item-end (click)="openDetailModal(findingPlayer.team_id)">Xem</button>
       </ion-item>
       
-      <ion-item>
+      <ion-item *ngIf="!findingPlayer.by_admin">
         <ion-label> Xin gia nhap doi bong </ion-label>
         <ion-icon name="person-add" item-end></ion-icon>
       </ion-item>
@@ -216,184 +243,6 @@ export class ModalFindingPlayerDetail {
   call(number)
   {
     this.apiService.call(number);
-  }
-}
-
-@Component({
-  template: `
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-title>
-          Đăng tin
-        </ion-title>
-        <ion-buttons start>
-          <button ion-button (click)="dismiss()">
-            <span ion-text color="light" showWhen="ios">Cancel</span>
-            <ion-icon name="md-close" showWhen="android,windows"></ion-icon>
-          </button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content>
-      <ion-item text-wrap>
-        <p>- Tin sẽ hết hạn sau {{this.apiService.expiredDays}} ngày : {{expiredDate}}</p>
-        <p>(*) Thông tin cần thiết.</p>
-      </ion-item>
-
-      <ion-list>
-        <form [formGroup]="findingPlayerForm" (ngSubmit)="logForm()">
-          <ion-item-group>
-            <ion-item-divider color="light">Địa Điểm</ion-item-divider>
-            <ion-item>
-              <ion-label stacked>Thành Phố *</ion-label>
-              <ion-select formControlName="cityId" [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
-                <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
-              </ion-select>
-            </ion-item>
-            <ion-item>
-              <ion-label stacked>Quận/Huyện *</ion-label>
-              <ion-select multiple="true" formControlName="districtId" >
-                <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
-              </ion-select>
-            </ion-item>
-            <ion-item>
-              <ion-label stacked>Địa chỉ sân</ion-label>
-              <ion-input type="text" placeholder="" formControlName="address"></ion-input>
-            </ion-item>
-          </ion-item-group>
-          <ion-item-group>
-            <ion-item-divider color="light">Thời gian</ion-item-divider>
-            <ion-item>
-              <ion-label stacked>Ngày</ion-label>
-              <ion-datetime displayFormat="DDDD, D MMMM" pickerFormat="MMMM D, YYYY" [(min)]="minDate" [(max)]="maxDate" formControlName="matchDate"></ion-datetime>
-            </ion-item>
-            <ion-item>
-              <ion-label stacked>Giờ</ion-label>
-              <ion-input type="text" formControlName="matchHour"></ion-input>
-            </ion-item>
-
-          </ion-item-group>
-          <ion-item-group>
-            <ion-item-divider color="light">Cần tìm</ion-item-divider>
-              <ion-item>
-                <ion-label stacked>Số Lượng</ion-label>
-                <ion-input type="number" placeholder="" formControlName="needingNumber"></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-label stacked>Vị Trí</ion-label>
-                <ion-select formControlName="positionId" >
-                  <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
-                </ion-select>
-              </ion-item>
-              <ion-item>
-                <ion-label stacked>Trình</ion-label>
-                <ion-select formControlName="levelId" >
-                  <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
-                </ion-select>
-              </ion-item>
-              <ion-item text-wrap>
-                <ion-label stacked>Lời nhắn</ion-label>
-                <ion-textarea formControlName="message"></ion-textarea>
-              </ion-item>
-          </ion-item-group>
-
-          <ion-item-group>
-            <ion-item-divider color="light">Liên hệ</ion-item-divider>
-            <ion-item>
-              <ion-label stacked>SĐT</ion-label>
-              <ion-input type="number" formControlName="phoneNumber"></ion-input>
-            </ion-item>
-          </ion-item-group>
-        </form>
-      </ion-list>
-      
-      <ion-fab right bottom>
-        <ion-buttons end>
-          <button ion-fab color="primary" (click)="logForm()" [disabled]="!findingPlayerForm.valid">
-            <ion-icon name="send"></ion-icon>
-          </button>
-        </ion-buttons>
-      </ion-fab>
-    </ion-content>
-  `,
-})
-export class ModalAddFindingPlayer {
-  private findingPlayerForm: FormGroup;
-  // data
-  cities          : any;
-  levels          : any;
-  districts       : any;
-  positions       : any;
-  districtsByCity : any;
-  
-  currentDate     : string;
-  expiredDate     : string;
-  maxDate         : string;
-  minDate         : string;
-
-  filterData      : any;
-  selectedCity    : any;
-
-  constructor(
-    public params      : NavParams,
-    public apiService  : ApiService,
-    public viewCtrl    : ViewController,
-    public formBuilder : FormBuilder,
-  ) {
-    let now     = new Date();
-    let expired = new Date();
-    let max     = new Date();
-
-    expired.setDate(expired.getDate() + this.apiService.expiredDays);
-    max.setDate(max.getDate() + this.apiService.aheadDays);
-      
-    this.minDate     = now.toISOString();
-    this.maxDate     = max.toISOString();
-    this.currentDate = now.toISOString();
-    this.expiredDate = expired.toISOString().substring(0, 10);
-
-    this.levels          = this.params.get('levels');
-    this.cities          = this.params.get('cities');
-    this.positions       = this.params.get('positions');
-    this.districtsByCity = this.params.get('districtsByCity');
-
-    this.filterData      = this.params.get('filterData');
-
-    this.districts = this.districtsByCity[this.filterData.cityId].districts;
-
-    this.findingPlayerForm = this.formBuilder.group({
-      cityId        : [this.filterData.cityId],
-      districtId    : [this.filterData.districtIds, Validators.required],
-      positionId    : ['', Validators.required],
-      levelId       : [this.filterData.levelIds, Validators.required],
-      address       : [''],
-      message       : [''],
-      needingNumber : ['1'],
-      matchHour     : [''],
-      matchDate     : [this.currentDate],
-      expiredDate   : [this.expiredDate],
-      phoneNumber   : ['0974796654', Validators.required],
-    });
-  }
-
-  updateDistrict() 
-  {
-    if(this.selectedCity) {
-      this.districts = this.districtsByCity[this.selectedCity].districts;
-    }
-  }
-
-  async logForm() 
-  {
-    this.apiService.handleLoading();
-    await this.apiService.addFindingPlayer(this.findingPlayerForm.value)
-      .then(data => {
-        this.viewCtrl.dismiss(data);
-      }, error => console.log(error));
-  }
-  dismiss() 
-  {
-    this.viewCtrl.dismiss();
   }
 }
 
@@ -462,21 +311,24 @@ export class ModalFilterFindingPlayer {
   selectedLevel: any;
 
   filterData: any;
+  notificationSetting: any;
 
+  currentPlayer   : any;
+  
   constructor(
     public params: NavParams,
     public viewCtrl: ViewController,
   ) {
-    this.levels          = this.params.get('levels');
-    this.cities          = this.params.get('cities');
-    this.positions       = this.params.get('positions');
-    this.districtsByCity = this.params.get('districtsByCity');
-    this.filterData      = this.params.get('filterData');
+    this.levels              = this.params.get('levels');
+    this.cities              = this.params.get('cities');
+    this.positions           = this.params.get('positions');
+    this.districtsByCity     = this.params.get('districtsByCity');
+    this.notificationSetting = this.params.get('notificationSetting');
 
-    this.selectedCity     = this.filterData.cityId;
+    this.selectedCity     = this.notificationSetting.cityId;
     this.updateDistrict();
-    this.selectedLevel    = this.filterData.levelIds;
-    this.selectedDistrict = this.filterData.districtIds;
+    this.selectedLevel    = this.notificationSetting.levelIds;
+    this.selectedDistrict = this.notificationSetting.districtIds;
   }
 
   updateDistrict() 
@@ -502,3 +354,195 @@ export class ModalFilterFindingPlayer {
     this.viewCtrl.dismiss();
   }
 }
+
+@Component({
+  template: `
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>
+          Đăng tin
+        </ion-title>
+        <ion-buttons start>
+          <button ion-button (click)="dismiss()">
+            <span ion-text color="light" showWhen="ios">Cancel</span>
+            <ion-icon name="md-close" showWhen="android,windows"></ion-icon>
+          </button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-item text-wrap>
+        <p>- Tin sẽ hết hạn sau {{this.apiService.expiredDays}} ngày : {{expiredDate}}</p>
+        <p>(*) Thông tin cần thiết.</p>
+      </ion-item>
+
+      <ion-list>
+        <form [formGroup]="findingPlayerForm" (ngSubmit)="logForm()">
+          <ion-item-group>
+            <ion-item-divider color="light">Địa Điểm</ion-item-divider>
+            <ion-item>
+              <ion-label stacked>Thành Phố *</ion-label>
+              <ion-select formControlName="cityId" [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
+                <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label stacked>Quận/Huyện *</ion-label>
+              <ion-select formControlName="districtId" >
+                <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label stacked>Địa chỉ sân</ion-label>
+              <ion-input type="text" placeholder="" formControlName="address"></ion-input>
+            </ion-item>
+          </ion-item-group>
+          <ion-item-group>
+            <ion-item-divider color="light">Thời gian</ion-item-divider>
+            <ion-item>
+              <ion-label>Đã đặt sân</ion-label>
+              <ion-toggle formControlName="isBooked"></ion-toggle>
+            </ion-item>
+            <ion-item *ngIf="findingPlayerForm.value.isBooked">
+              <ion-label stacked>Ngày</ion-label>
+              <ion-datetime displayFormat="DDDD, D MMMM" pickerFormat="MMMM D, YYYY" [(min)]="minDate" [(max)]="maxDate" formControlName="matchDate"></ion-datetime>
+            </ion-item>
+            <ion-item>
+              <ion-label stacked>Giờ</ion-label>
+              <ion-input type="text" formControlName="matchHour"></ion-input>
+            </ion-item>
+
+          </ion-item-group>
+          <ion-item-group>
+            <ion-item-divider color="light">Cần tìm</ion-item-divider>
+              <ion-item>
+                <ion-label stacked>Số Lượng</ion-label>
+                <ion-input type="number" placeholder="" formControlName="needingNumber"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label stacked>Vị Trí</ion-label>
+                <ion-select formControlName="positionId" >
+                  <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
+                </ion-select>
+              </ion-item>
+              <ion-item>
+                <ion-label stacked>Trình</ion-label>
+                <ion-select formControlName="levelId" >
+                  <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
+                </ion-select>
+              </ion-item>
+              <ion-item text-wrap>
+                <ion-label stacked>Lời nhắn</ion-label>
+                <ion-textarea formControlName="message"></ion-textarea>
+              </ion-item>
+          </ion-item-group>
+
+          <ion-item-group>
+            <ion-item-divider color="light">Liên hệ</ion-item-divider>
+            <ion-item>
+              <ion-label stacked>Tên</ion-label>
+              <ion-input type="text" formControlName="contactName"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label stacked>SĐT</ion-label>
+              <ion-input type="number" formControlName="phoneNumber"></ion-input>
+            </ion-item>
+          </ion-item-group>
+        </form>
+      </ion-list>
+      
+      <ion-fab right bottom>
+        <ion-buttons end>
+          <button ion-fab color="primary" (click)="logForm()" [disabled]="!findingPlayerForm.valid">
+            <ion-icon name="send"></ion-icon>
+          </button>
+        </ion-buttons>
+      </ion-fab>
+    </ion-content>
+  `,
+})
+export class ModalAddFindingPlayer {
+  private findingPlayerForm: FormGroup;
+  // data
+  cities          : any;
+  levels          : any;
+  districts       : any;
+  positions       : any;
+  districtsByCity : any;
+  
+  currentDate     : string;
+  expiredDate     : string;
+  maxDate         : string;
+  minDate         : string;
+
+  filterData      : any;
+  selectedCity    : any;
+
+  currentPlayer   : any;
+
+  constructor(
+    public params      : NavParams,
+    public apiService  : ApiService,
+    public viewCtrl    : ViewController,
+    public formBuilder : FormBuilder,
+  ) {
+    let now     = new Date();
+    let expired = new Date();
+    let max     = new Date();
+
+    expired.setDate(expired.getDate() + this.apiService.expiredDays);
+    max.setDate(max.getDate() + this.apiService.aheadDays);
+      
+    this.minDate     = now.toISOString();
+    this.maxDate     = max.toISOString();
+    this.currentDate = now.toISOString();
+    this.expiredDate = expired.toISOString().substring(0, 10);
+
+    this.levels          = this.params.get('levels');
+    this.cities          = this.params.get('cities');
+    this.positions       = this.params.get('positions');
+    this.districtsByCity = this.params.get('districtsByCity');
+
+    this.filterData      = this.params.get('filterData');
+    this.currentPlayer   = this.params.get('currentPlayer');
+
+    this.districts = this.districtsByCity[this.filterData.cityId].districts;
+
+    this.findingPlayerForm = this.formBuilder.group({
+      cityId        : [this.filterData.cityId],
+      districtId    : [this.filterData.districtIds, Validators.required],
+      positionId    : ['', Validators.required],
+      levelId       : [this.filterData.levelIds, Validators.required],
+      address       : [''],
+      message       : [''],
+      needingNumber : ['1'],
+      isBooked      : [true],
+      matchHour     : [''],
+      matchDate     : [this.currentDate],
+      expiredDate   : [this.expiredDate],
+      contactName   : [this.currentPlayer.name],
+      phoneNumber   : ['0974796654', Validators.required],
+    });
+  }
+
+  updateDistrict() 
+  {
+    if(this.selectedCity) {
+      this.districts = this.districtsByCity[this.selectedCity].districts;
+    }
+  }
+
+  async logForm() 
+  {
+    this.apiService.handleLoading();
+    await this.apiService.addFindingPlayer(this.findingPlayerForm.value)
+      .then(data => {
+        this.viewCtrl.dismiss(data);
+      }, error => console.log(error));
+  }
+  dismiss() 
+  {
+    this.viewCtrl.dismiss();
+  }
+}
+
