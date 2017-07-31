@@ -22,10 +22,10 @@
     <ion-card *ngFor="let findingMatch of findingMatchs" (click)="openDetailModal(findingMatch)">
       <ion-card-content>
       <p>
-        [ Quận {{findingMatch.district_name}}]  Ngày {{findingMatch.date}}
+        {{findingMatch.date}}
       </p>
       <p>
-        {{findingMatch.player_name}} đang tìm kèo trình {{findingMatch.level_name}}.
+        [Quận {{findingMatch.district_name}}] -- {{findingMatch.player_name}} đang tìm kèo trình {{findingMatch.level_name}}.
       </p>
       </ion-card-content>
     </ion-card>

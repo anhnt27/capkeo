@@ -21,38 +21,38 @@ import { ApiService } from '../../providers/api-service/api-service';
   providers: [ApiService]
 })
 export class FindingPlayerPage { 
-  findingPlayers: any;
-  cities: any;
-  districts: any;
-  districtsByCity: any;
-  positions: any;
-  levels: any;
-  properties: any;
+  findingPlayers  : any;
+  cities          : any;
+  districts       : any;
+  districtsByCity : any;
+  positions       : any;
+  levels          : any;
+  properties      : any;
 
-  selectedCity: any;
-  selectedDistrict: any;
-  selectedPosition: any;
-  selectedLevel: any;
+  selectedCity     : any;
+  selectedDistrict : any;
+  selectedPosition : any;
+  selectedLevel    : any;
 
   currentDate     : string;
   expiredDate     : string;
   maxDate         : string;
   minDate         : string;
 
-  filterData: any;
-  currentPlayer     : any;
+  filterData    : any;
+  currentPlayer : any;
 
-  defaultFilterData: any;
+  defaultFilterData   : any;
   notificationSetting : any;
 
   constructor(
-    public platform: Platform, 
-    public navParams: NavParams, 
-    public apiService: ApiService,
-    public navCtrl: NavController, 
-    public modalCtrl: ModalController, 
-    public nativeStorage: NativeStorage,
-    public popoverCtrl: PopoverController ,
+    public platform      : Platform, 
+    public navParams     : NavParams, 
+    public apiService    : ApiService,
+    public navCtrl       : NavController, 
+    public modalCtrl     : ModalController, 
+    public nativeStorage : NativeStorage,
+    public popoverCtrl   : PopoverController ,
     ) 
   {
   } 
@@ -101,15 +101,7 @@ export class FindingPlayerPage {
 
   // open modal
   async openAddModal(){
-    let data = {
-      cities          : this.cities, 
-      levels          : this.levels, 
-      positions       : this.positions, 
-      currentPlayer   : this.currentPlayer, 
-      districtsByCity : this.districtsByCity, 
-      filterData      : this.defaultFilterData,
-    };
-    let modal = this.modalCtrl.create(ModalAddFindingPlayer, data);
+    let modal = this.modalCtrl.create(ModalAddFindingPlayer, this.navParams.data);
     modal.onDidDismiss((data: any) => {
       if(data) {
         this.apiService.handlePostResult(data.code);
@@ -122,7 +114,7 @@ export class FindingPlayerPage {
   }
 
   openDetailModal(findingPlayer) {
-    let data = {findingPlayer: findingPlayer};
+    let data = {findingData: findingPlayer};
     let modal = this.modalCtrl.create(ModalFindingPlayerDetail, data);
     modal.present();
   }
@@ -169,43 +161,75 @@ export class FindingPlayerPage {
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-item>
-        <ion-label>Tên</ion-label>
-        <p item-end>{{findingPlayer.player_name}}</p>
-      </ion-item>
-      <ion-item>
-        <ion-label>Quận</ion-label>
-        <p item-end>{{findingPlayer.district_name}}</p>
-      </ion-item>
-      <ion-item>
-        <ion-label>Vị Trí</ion-label>
-        <p item-end>{{findingPlayer.position_name}}</p>
-      </ion-item>
-      <ion-item>
-        <ion-label>Trình độ</ion-label>
-        <p item-end>{{findingPlayer.level_name}}</p>
-      </ion-item>
-      <ion-item *ngIf="findingPlayer.address">
-        <ion-label>Địa chỉ</ion-label>
-        <p>{{findingPlayer.address}}</p>
-      </ion-item>
-      <ion-item *ngIf="findingPlayer.message" text-wrap>
-        <h2>Lời nhắn</h2>
-        <p>{{findingPlayer.message}}</p>
-      </ion-item>
-      <ion-item>
-        <ion-label>SĐT</ion-label>
-        <p item-end>{{findingPlayer.phone_number}}</p>
-        <ion-icon name="call" item-end (click)="call(findingPlayer.phone_number)" smaill></ion-icon>
-      </ion-item>
 
-      <ion-item>
+      <ion-item-group>
+        <ion-item-divider color="light">Địa điểm</ion-item-divider>
+        <ion-item>
+          <label>Thành phố</label>
+          <p item-end>{{findingData.city_name}}</p>
+        </ion-item>
+        <ion-item>
+          <ion-label>Quận</ion-label>
+          <p item-end>{{findingData.district_name}}</p>
+        </ion-item>
+        <ion-item *ngIf="findingData.address">
+          <ion-label>Địa chỉ</ion-label>
+          <p>{{findingData.address}}</p>
+        </ion-item>
+      </ion-item-group>
+
+      <ion-item-group *ngIf="findingData.date || findingData.time">
+        <ion-item-divider color="light">Thời gian</ion-item-divider>
+        <ion-item *ngIf="findingData.date">
+          <label>Ngày</label>
+          <p item-end>{{findingData.date}}</p>
+        </ion-item>
+        <ion-item *ngIf="findingData.time">
+          <label>Giờ</label>
+          <p item-end>{{findingData.time}}</p>
+        </ion-item>
+      </ion-item-group>
+
+      <ion-item-group>
+        <ion-item-divider color="light">Cần tìm</ion-item-divider>
+        <ion-item>
+          <label>Loại sân</label>
+          <p item-end>{{findingData.ground_type_name}}</p>
+        </ion-item>
+        <ion-item>
+          <ion-label>Vị Trí</ion-label>
+          <p item-end>{{findingData.position_name}}</p>
+        </ion-item>
+        <ion-item>
+          <ion-label>Trình độ</ion-label>
+          <p item-end>{{findingData.level_name}}</p>
+        </ion-item>
+        <ion-item *ngIf="findingData.message" text-wrap>
+          <h2>Lời nhắn</h2>
+          <p>{{findingData.message}}</p>
+        </ion-item>
+      </ion-item-group>
+
+      <ion-item-group>
+        <ion-item-divider color="light">Liên hệ</ion-item-divider>
+        <ion-item>
+          <h2>Tên</h2>
+          <p item-end>{{findingData.player_name}}</p>
+        </ion-item>
+        <ion-item>
+          <h2>SĐT</h2>
+          <p item-end>{{findingData.phone_number}}</p>
+          <ion-icon name="call" item-start (click)="call(findingData.phone_number)" smaill color="secondary"></ion-icon>
+        </ion-item>
+      </ion-item-group>
+
+      <ion-item *ngIf="false">
         <label>Chi tiết đội bóng</label>
-        <button ion-button clear item-end (click)="openDetailModal(findingPlayer.team_id)">Xem</button>
+        <button ion-button clear item-end (click)="openDetailModal(findingData.team_id)">Xem</button>
       </ion-item>
       
-      <ion-item *ngIf="!findingPlayer.by_admin">
-        <ion-label> Xin gia nhap doi bong </ion-label>
+      <ion-item *ngIf="!findingData.by_admin">
+        <h2> Xin gia nhap doi bong </h2>
         <ion-icon name="person-add" item-end></ion-icon>
       </ion-item>
     </ion-content>
@@ -213,7 +237,7 @@ export class FindingPlayerPage {
 })
 export class ModalFindingPlayerDetail {
   team;
-  findingPlayer;
+  findingData;
   constructor(
     public platform : Platform,
     public params   : NavParams,
@@ -222,7 +246,7 @@ export class ModalFindingPlayerDetail {
     public viewCtrl : ViewController,
     public modalCtrl: ModalController,
   ) {
-    this.findingPlayer = this.params.get('findingPlayer');
+    this.findingData = this.params.get('findingData');
   }
 
   dismiss() {
@@ -378,6 +402,7 @@ export class ModalFilterFindingPlayer {
 
       <ion-list>
         <form [formGroup]="findingPlayerForm" (ngSubmit)="logForm()">
+
           <ion-item-group>
             <ion-item-divider color="light">Địa Điểm</ion-item-divider>
             <ion-item>
@@ -397,10 +422,11 @@ export class ModalFilterFindingPlayer {
               <ion-input type="text" placeholder="" formControlName="address"></ion-input>
             </ion-item>
           </ion-item-group>
+
           <ion-item-group>
             <ion-item-divider color="light">Thời gian</ion-item-divider>
             <ion-item>
-              <ion-label>Đã đặt sân</ion-label>
+              <ion-label>Chọn ngày cần tìm:</ion-label>
               <ion-toggle formControlName="isBooked"></ion-toggle>
             </ion-item>
             <ion-item *ngIf="findingPlayerForm.value.isBooked">
@@ -411,10 +437,16 @@ export class ModalFilterFindingPlayer {
               <ion-label stacked>Giờ</ion-label>
               <ion-input type="text" formControlName="matchHour"></ion-input>
             </ion-item>
-
           </ion-item-group>
+
           <ion-item-group>
             <ion-item-divider color="light">Cần tìm</ion-item-divider>
+              <ion-item>
+                <ion-label stacked>Loại Sân *</ion-label>
+                <ion-select formControlName="groundTypeId" >
+                  <ion-option *ngFor="let groundType of groundTypes" value="{{groundType.id}}">{{groundType.value}}</ion-option>
+                </ion-select>
+              </ion-item>
               <ion-item>
                 <ion-label stacked>Số Lượng</ion-label>
                 <ion-input type="number" placeholder="" formControlName="needingNumber"></ion-input>
@@ -448,6 +480,7 @@ export class ModalFilterFindingPlayer {
               <ion-input type="number" formControlName="phoneNumber"></ion-input>
             </ion-item>
           </ion-item-group>
+
         </form>
       </ion-list>
       
@@ -468,6 +501,7 @@ export class ModalAddFindingPlayer {
   levels          : any;
   districts       : any;
   positions       : any;
+  groundTypes     : any;
   districtsByCity : any;
   
   currentDate     : string;
@@ -500,19 +534,21 @@ export class ModalAddFindingPlayer {
 
     this.levels          = this.params.get('levels');
     this.cities          = this.params.get('cities');
+    this.groundTypes     = this.params.get('groundTypes');
     this.positions       = this.params.get('positions');
     this.districtsByCity = this.params.get('districtsByCity');
 
-    this.filterData      = this.params.get('filterData');
+    this.filterData      = this.params.get('defaultFilterData');
     this.currentPlayer   = this.params.get('currentPlayer');
 
-    this.districts = this.districtsByCity[this.filterData.cityId].districts;
+    this.updateDistrict();
 
     this.findingPlayerForm = this.formBuilder.group({
       cityId        : [this.filterData.cityId],
       districtId    : [this.filterData.districtIds, Validators.required],
       positionId    : ['', Validators.required],
       levelId       : [this.filterData.levelIds, Validators.required],
+      groundTypeId  : [this.filterData.groundTypeId, Validators.required],
       address       : [''],
       message       : [''],
       needingNumber : ['1'],

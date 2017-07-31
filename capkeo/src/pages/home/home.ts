@@ -22,26 +22,27 @@ export class HomePage {
 
   @ViewChild('map') mapElement: ElementRef;
 
-  isReady: boolean = false;
-  map: any;	
+  isReady : boolean = false;
+  map     : any;	
 
   //tabs
-  tabNotification: any;
-  tabTeam: any;
-  tabSearch: any;
-  tabSetting: any;
-
-  email: string;
-  registrationId: string;
-
+  tabNotification : any;
+  tabTeam         : any;
+  tabSearch       : any;
+  tabSetting      : any;
+  
+  email           : string;
+  registrationId  : string;
+  
   // param to tabs
-  defaultParams: any;
+  defaultParams   : any;
 
   cities               : any;
   districts            : any;
   districtsByCity      : any;
   levels               : any;
   positions            : any;
+  groundTypes          : any;
   defaultFilterData    : any;
   currentPlayer        : any;
 
@@ -52,10 +53,10 @@ export class HomePage {
 
 
   constructor(
-    public events: Events, 
-    public apiService: ApiService,
-    public navCtrl: NavController,  
-    public nativeStorage: NativeStorage, 
+    public events        : Events, 
+    public apiService    : ApiService,
+    public navCtrl       : NavController,  
+    public nativeStorage : NativeStorage, 
     ) 
   {
     
@@ -74,9 +75,15 @@ export class HomePage {
     });
 
     events.subscribe('player:acceptInvite', () => {
-      console.log('player:acceptInvite');
+      this.ionViewDidLoad();
+      this.tabRef.select(0);
+    });
+
+    events.subscribe('profile:updated', () => {
+      this.tabRef.select(0);
       this.ionViewDidLoad();
     });
+
 
   }
 
@@ -87,56 +94,60 @@ export class HomePage {
 
   async ionViewDidLoad()
   {
-    this.loading = this.apiService.createLoading();
-    this.loading.present();
+    this.loading = this.apiService.handleLoading(10000);
 
     if(! this.apiService.isTesting) {
       this.sendRegistrationId();
     }
-
-
+    
     await this.countUnreadNotifications()
 
     await this.getLocations();
     await this.getLevels();
     await this.getPositions();
+    await this.getGroundTypes();
     await this.getPlayer();
-
 
     this.defaultParams = {
       cities            : this.cities, 
       levels            : this.levels, 
       positions         : this.positions,
+      groundTypes       : this.groundTypes,
       currentPlayer     : this.currentPlayer,
       districtsByCity   : this.districtsByCity, 
       defaultFilterData : this.defaultFilterData,
     };
-    console.log(this.defaultParams);
-    // this.loadMap();
-    this.loading.dismiss();
+    console.log('nav Param HomePage', this.defaultParams);
   }
 
-  getLocations() 
+  async getLocations() 
   {
-    this.apiService.getLocations()
+    await this.apiService.getLocations()
     .then(data => {
       this.cities = data['results']['cities'];
       this.districtsByCity  = data['results']['districts_by_city'];
     });
   }
 
-  getLevels() 
+  async getLevels() 
   {
-    this.apiService.getProperties('level')
+    await this.apiService.getProperties('level')
     .then(data => {
       this.levels = data;
     });
   }
 
-  getPositions() {
-    this.apiService.getProperties('position')
+  async getPositions() {
+    await this.apiService.getProperties('position')
     .then(data => {
       this.positions = data;
+    });
+  }
+
+  async getGroundTypes() {
+    await this.apiService.getProperties('ground_type')
+    .then(data => {
+      this.groundTypes = data;
     });
   }
 
@@ -146,7 +157,7 @@ export class HomePage {
     .then((data: any) => {
       this.currentPlayer = data;
 
-      this.defaultFilterData = {cityId: data.city_id, districtIds: data.district_id, levelIds: data.level_id, positionIds: data.position_id};
+      this.defaultFilterData = {cityId: data.city_id, districtIds: data.district_id, levelIds: data.level_id, positionIds: data.position_id, groundTypeId: data.ground_type_id};
     }, error =>console.log(error)
     );
   }
@@ -156,6 +167,9 @@ export class HomePage {
     this.apiService.countUnreadNotifications().
     then((data: any) => {
       this.unread = data;
+
+      let unreadNumber = parseInt(this.unread);
+      if(unreadNumber == 0) this.unread ="";
       this.isReady = true;
     }, error => console.log(error))
   }

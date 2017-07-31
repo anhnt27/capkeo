@@ -1,7 +1,7 @@
 <ion-content>
   <!-- <div #map id="map"></div>   -->
   <ion-tabs color="primary" #myTabs>
-     <ion-tab tabIcon="notifications" [root]="tabNotification" id="12" tabBadge="*" tabBadgeStyle="danger"></ion-tab>
+     <ion-tab tabIcon="notifications" [root]="tabNotification" id="12" tabBadge="{{unread}}" tabBadgeStyle="danger"></ion-tab>
      <ion-tab tabIcon="people" [rootParams]="defaultParams" [root]="tabTeam"></ion-tab>
      <ion-tab tabIcon="search" [rootParams]="defaultParams" [root]="tabSearch"></ion-tab>
      <ion-tab tabIcon="options" [rootParams]="defaultParams" [root]="tabSetting"></ion-tab>

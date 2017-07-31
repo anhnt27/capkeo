@@ -22,11 +22,7 @@ import { SearchPage } from '../pages/search/search';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
-import { PeopleService } from '../providers/people-service/people-service';
 import { ApiService } from '../providers/api-service/api-service';
-import { HelperService } from '../providers/helper/helper';
-import { FindingPlayerService } from '../providers/finding-player-service/finding-player-service';
-import { ConstantService } from '../providers/constant-service/constant-service';
 
 @NgModule({
   declarations: [
@@ -122,12 +118,8 @@ import { ConstantService } from '../providers/constant-service/constant-service'
     NativeStorage,
     CallNumber,
 
-    PeopleService,
     { provide: ErrorHandler, useClass: IonicErrorHandler },
     ApiService,
-    HelperService,
-    FindingPlayerService,
-    ConstantService,
   ]
 })
 export class AppModule { }

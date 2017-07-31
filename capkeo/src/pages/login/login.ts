@@ -4,7 +4,6 @@ import { GooglePlus } from '@ionic-native/google-plus';
 import { NativeStorage } from '@ionic-native/native-storage';
 import { IonicPage, NavController, NavParams, MenuController } from 'ionic-angular';
 
-import { NotificationPage } from '../notification/notification';
 import { HomePage } from '../home/home';
 
 import { ApiService } from '../../providers/api-service/api-service';
@@ -140,7 +139,6 @@ export class LoginPage {
 
 
   doGoogleLogin() {
-    let nav = this.nav;
     let env = this;
     // let loading = this.loadingCtrl.create({
     //   content: 'Please wait...'

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
 
-import { Platform, ModalController, ViewController } from 'ionic-angular';
+import { Platform, ModalController } from 'ionic-angular';
 
 /**
  * Generated class for the PlayerPage page.

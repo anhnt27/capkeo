@@ -40,38 +40,68 @@
       </ion-list>
     </ion-list>
     <ion-list *ngSwitchCase="'information'">
-      <ion-item>
-        <ion-label stacked>Thành Phố</ion-label>
-        <ion-select [(ngModel)]="currentPlayer.city_id" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
-          <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-label stacked>Quận/Huyện</ion-label>
-        <ion-select [(ngModel)]="currentPlayer.district_id">
-          <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-label stacked>Vị Trí</ion-label>
-        <ion-select [(ngModel)]="currentPlayer.position_id">
-          <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-label stacked>Trình</ion-label>
-        <ion-select [(ngModel)]="currentPlayer.level_id">
-          <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-label stacked>Tên</ion-label>
-        <ion-input [(ngModel)]="currentPlayer.name" type="text" placeholder=""></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label stacked>Số Điện Thoại</ion-label>
-        <ion-input [(ngModel)]="currentPlayer.phone_number" type="number" placeholder=""></ion-input>
-      </ion-item>
+      <ion-item-group>
+        <ion-item-divider color="light">Chi tiết</ion-item-divider>
+        <ion-item>
+          <ion-label stacked>Thành Phố</ion-label>
+          <ion-select [(ngModel)]="currentPlayer.city_id" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
+            <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Quận/Huyện</ion-label>
+          <ion-select [(ngModel)]="currentPlayer.district_id">
+            <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Vị Trí</ion-label>
+          <ion-select [(ngModel)]="currentPlayer.position_id">
+            <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Loại Sân</ion-label>
+            <ion-select [(ngModel)]="currentPlayer.ground_type_id" >
+            <ion-option *ngFor="let groundType of groundTypes" value="{{groundType.id}}">{{groundType.value}}</ion-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Trình</ion-label>
+            <ion-select [(ngModel)]="currentPlayer.level_id">
+            <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
+          </ion-select>
+        </ion-item>
+      </ion-item-group>
+
+      <ion-item-group>
+        <ion-item-divider color="light">Thông tin cá nhân</ion-item-divider>
+        <ion-item>
+          <ion-label stacked>Tên</ion-label>
+          <ion-input [(ngModel)]="currentPlayer.name" type="text" placeholder=""></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Số Điện Thoại</ion-label>
+          <ion-input [(ngModel)]="currentPlayer.phone_number" type="number" placeholder=""></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Tuổi</ion-label>
+          <ion-input [(ngModel)]="currentPlayer.age" min="0" type="number" placeholder=""></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Nghề nghiệp</ion-label>
+          <ion-input [(ngModel)]="currentPlayer.job" type="text" placeholder=""></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Ảnh đại diện</ion-label>
+          <ion-input [(ngModel)]="currentPlayer.profile_image_link" type="text" placeholder=""></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label stacked>Hình Ảnh</ion-label>
+          <ion-input [(ngModel)]="currentPlayer.introduce_image_link" type="text" placeholder=""></ion-input>
+        </ion-item>
+      </ion-item-group>
+
       <ion-fab right bottom>
         <ion-buttons end>
           <button ion-fab color="primary" (click)="saveProfile()">

@@ -47,6 +47,7 @@
   </ion-segment>
 
   <div [ngSwitch]="teamSegment" *ngIf="currentPlayer.team_id && isDataLoaded">
+
     <ion-list *ngSwitchCase="'information'">
       <ion-list *ngIf="currentPlayer.team_id && currentPlayer.is_team_lead">
         <ion-item *ngFor="let joiningRequest of joiningRequests">
@@ -57,38 +58,44 @@
       </ion-list>
 
       <ion-list *ngIf="currentPlayer.team_id">
-        <ion-item>
-          <ion-label> Is Leader setting</ion-label>
-          <ion-toggle [(ngModel)]="isLeader"></ion-toggle>
-        </ion-item>
-        <ion-item *ngIf="isLeader">
-          <ion-label>Team đã đủ người</ion-label>
-          <ion-toggle checked="false"></ion-toggle>
-        </ion-item>
-        <ion-item>
-            <ion-label>Tên đội : </ion-label>
-            <p item-end>{{team.name}}</p>
-        </ion-item>
-        <ion-item>
-            <ion-label>Số Thành Viên</ion-label>
-            <p item-end>{{team.number_of_member}}</p>
-        </ion-item>
-        <ion-item>
-            <ion-label>Quận</ion-label>
-            <p item-end>2</p>
-        </ion-item>
-        <ion-item text-wrap >
-            <ion-label>Thoi gian hoat dong</ion-label>
-            <p>{{team.usual_match_time}} </p>
-        </ion-item>
-        <ion-item>
-            <ion-label>Tuổi trung binh</ion-label>
-            <p item-end>{{team.average_age}}</p>
-        </ion-item>
-        <ion-item text-wrap *ngIf="team.message">
-          <ion-label>Giới thiệu</ion-label>
-          <p>{{team.message}}</p>
-        </ion-item>
+        <ion-item-group >
+          <ion-item-divider color="light">Địa chỉ</ion-item-divider>
+          <ion-item *ngIf="team.district_name">
+              <p item-end>Quận {{team.district_name}} - {{team.city_name}} </p>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group>
+          <ion-item-divider color="light">Chi tiết</ion-item-divider>
+          <ion-item>
+              <h2>Tên đội : </h2>
+              <p item-end>{{team.name}}</p>
+          </ion-item>
+          <ion-item *ngIf="team.number_of_member">
+              <h2>Số Thành Viên</h2>
+              <p item-end>{{team.number_of_member}}</p>
+          </ion-item>
+          <ion-item text-wrap  *ngIf="team.usual_match_time">
+              <h2>Đội thường đá vào lúc: </h2>
+              <p>{{team.usual_match_time}} </p>
+          </ion-item>
+          <ion-item *ngIf="team.average_age">
+              <h2>Tuổi trung binh</h2>
+              <p item-end>{{team.average_age}}</p>
+          </ion-item>
+          <ion-item text-wrap *ngIf="team.message">
+            <h2>Giới thiệu</h2>
+            <p>{{team.message}}</p>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group *ngIf="team.introduce_image_link">
+          <ion-item-divider color="light">Hình ảnh </ion-item-divider>
+          <ion-card>
+            <img src="{{team.introduce_image_link}}">
+          </ion-card>
+        </ion-item-group>
+
       </ion-list>
     </ion-list>
     
@@ -103,6 +110,7 @@
         </ion-item>
       </ion-list>
       <br>
+
       <ion-list *ngIf="selectedMatch.id">
         <ion-item> 
           <label>Sân</label>
@@ -128,6 +136,7 @@
           <button item-end *ngIf="confirmStatusData.confirm_status == -1" ion-button color="primary" small (click)="confirmJoinMatch(1)">Có</button>  
         </ion-item>
       </ion-list>
+
       <ion-card *ngIf="selectedMatch.id">
         <ion-card-header >
           Điểm quân
@@ -142,7 +151,7 @@
                   <p *ngIf="player.confirm_status == 0">Chở má đi bơi zòi</p>
                   <ion-icon name="woman" color="primary" item-end *ngIf="player.confirm_status == 0"></ion-icon>
                   <p *ngIf="player.confirm_status == -1">...</p>
-                  <ion-icon name="call" color="primary" item-end *ngIf="player.confirm_status == -1"></ion-icon>
+                  <ion-icon name="call" color="secondary" item-end *ngIf="player.confirm_status == -1"></ion-icon>
                 </ion-item>
             </ion-list>
         </ion-card-content>
@@ -153,7 +162,7 @@
       <ion-list>
         <ion-item *ngFor="let teamPlayer of teamPlayers">
             <ion-avatar item-start>
-              <img src="https://scontent.fsgn4-1.fna.fbcdn.net/v/t1.0-1/c0.0.959.959/19275244_1368787403234870_8460842675365797296_n.jpg?oh=89b7a281c323a4f15cd3dfb60b51d43c&oe=5A0DD414">
+              <img src="{{teamPlayer.profile_image_link}}">
             </ion-avatar>
             <p>{{teamPlayer.name}}</p>
             <button ion-button clear item-end (click)="openPlayerDetailModal(teamPlayer)">Xem</button>

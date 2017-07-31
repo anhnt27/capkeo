@@ -79,7 +79,7 @@ export class TeamPage {
 
 
     // get param
-    console.log('tab team paramas:' , navParams.data);
+    console.log('tab paramas TeamPage:' , navParams.data);
     this.cities            = navParams.data.cities;
     this.levels            = navParams.data.levels;
     this.currentPlayer     = navParams.data.currentPlayer;
@@ -672,7 +672,7 @@ export class ModalAddTeam {
     <ion-header>
       <ion-toolbar color="primary">
         <ion-title>
-          Tạo đội
+          Thông tin đội
         </ion-title>
         <ion-buttons start>
           <button ion-button (click)="dismiss()">
@@ -687,55 +687,74 @@ export class ModalAddTeam {
         <ion-card-content>
           <ion-list>
             <form [formGroup]="teamForm" (ngSubmit)="logForm()">
-              <ion-item>
-                <ion-label stacked>Thành Phố *</ion-label>
-                <ion-select formControlName="cityId" [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
-                  <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
-                </ion-select>
-              </ion-item>
-              <ion-item>
-                <ion-label stacked>Quận/Huyện *</ion-label>
-                <ion-select formControlName="districtId" >
-                  <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
-                </ion-select>
-              </ion-item>
-              <ion-item>
-                <ion-label stacked>Trình</ion-label>
-                <ion-select formControlName="levelId" >
-                  <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
-                </ion-select>
-              </ion-item>
-              <ion-item>
-                <ion-label stacked>Tên Đội *</ion-label>
-                <ion-input type="text" formControlName="name"></ion-input>
-              </ion-item>
-              <ion-item text-wrap> 
-                <ion-label stacked>Giới Thiệu Đội</ion-label>
-                <textarea type="text" formControlName="message"></textarea>
-              </ion-item>
-              <ion-item>
-                <ion-label stacked>Tuổi Trung Bình</ion-label>
-                <ion-input type="number" formControlName="averageAge"></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-label stacked>Số Thành Viên</ion-label>
-                <ion-input type="number" formControlName="numberOfMember"></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-label stacked>Thời gian chiến</ion-label>
-                <ion-input type="text" formControlName="usualMatchTime"></ion-input>
-              </ion-item>
-              <ion-fab right bottom>
-                <ion-buttons end>
-                  <button ion-fab color="primary" type="submit" [disabled]="!teamForm.valid">
-                    <ion-icon name="send"></ion-icon>
-                  </button>
-                </ion-buttons>
-              </ion-fab>
+              
+
+              <ion-item-group >
+                <ion-item-divider color="light">Địa chỉ</ion-item-divider>
+                <ion-item>
+                  <ion-label stacked>Thành Phố *</ion-label>
+                  <ion-select formControlName="cityId" [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
+                    <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
+                  </ion-select>
+                </ion-item>
+                <ion-item>
+                  <ion-label stacked>Quận/Huyện *</ion-label>
+                  <ion-select formControlName="districtId" >
+                    <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
+                  </ion-select>
+                </ion-item>
+              </ion-item-group >
+
+              <ion-item-group >
+                <ion-item-divider color="light">Chi tiết</ion-item-divider>
+                <ion-item>
+                  <ion-label stacked>Tên Đội *</ion-label>
+                  <ion-input type="text" formControlName="name"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label stacked>Trình</ion-label>
+                  <ion-select formControlName="levelId" >
+                    <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
+                  </ion-select>
+                </ion-item>
+                <ion-item text-wrap> 
+                  <ion-label stacked>Giới Thiệu Đội</ion-label>
+                  <textarea type="text" formControlName="message"></textarea>
+                </ion-item>
+                <ion-item>
+                  <ion-label stacked>Tuổi Trung Bình</ion-label>
+                  <ion-input type="number" formControlName="averageAge"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label stacked>Số Thành Viên</ion-label>
+                  <ion-input type="number" formControlName="numberOfMember"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label stacked>Đội thường đá vào lúc      </ion-label>
+                  <ion-input type="text" formControlName="usualMatchTime"></ion-input>
+                </ion-item>
+              </ion-item-group >
+              
+              <ion-item-group >
+                <ion-item-divider color="light">Hình ảnh đội</ion-item-divider>
+                <ion-item>
+                  <ion-label stacked>Link hình ảnh đội</ion-label>
+                  <ion-input type="text" formControlName="introduceImage"></ion-input>
+                </ion-item>
+              </ion-item-group >
+
+       
             </form>
           </ion-list>
         </ion-card-content>
       </ion-card>
+      <ion-fab right bottom>
+        <ion-buttons end>
+          <button ion-fab color="primary" (click)="logForm()" [disabled]="!teamForm.valid">
+            <ion-icon name="send"></ion-icon>
+          </button>
+        </ion-buttons>
+      </ion-fab>
     </ion-content>
   `,
 })
@@ -781,6 +800,7 @@ export class ModalUpdateTeam {
       cityId          : [this.beingEditedTeam.city_id],
       name            : [this.beingEditedTeam.name, Validators.required],
       levelId         : [this.beingEditedTeam.level_id],
+      introduceImage  : [this.beingEditedTeam.introduce_image_link],
       districtId      : [this.beingEditedTeam.district_id, Validators.required],
     });
   }
@@ -911,30 +931,49 @@ export class ModalAddMatch {
     </ion-header>
     <ion-content>
       <ion-list>
-        <ion-item>
-            <ion-label>Tên đội : </ion-label>
-            <p item-end>{{team.name}}</p>
-        </ion-item>
-        <ion-item>
-            <ion-label>Quận</ion-label>
-            <p item-end>2</p>
-        </ion-item>
-        <ion-item>
-            <ion-label>Tuổi trung binh</ion-label>
-            <p item-end>{{team.average_age}}</p>
-        </ion-item>
-        <ion-item>
-            <ion-label>Số Thành Viên</ion-label>
-            <p item-end>{{team.number_of_member}}</p>
-        </ion-item>
-        <ion-item text-wrap >
-            <ion-label>Thoi gian hoat dong</ion-label>
-            <p>{{team.usual_match_time}} </p>
-        </ion-item>
-        <ion-item text-wrap *ngIf="team.message">
-          <ion-label>Giới thiệu</ion-label>
-          <p>{{team.message}}</p>
-        </ion-item>
+
+        <ion-item-group >
+          <ion-item-divider color="light">Địa chỉ</ion-item-divider>
+          <ion-item *ngIf="team.district_name">
+              <p item-end>Quận {{team.district_name}} - {{team.city_name}} </p>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group>
+          <ion-item-divider color="light">Chi tiết</ion-item-divider>
+          <ion-item>
+            <h2>Team đã đủ người</h2>
+            <ion-toggle checked="false"></ion-toggle>
+          </ion-item>
+          <ion-item>
+              <h2>Tên đội : </h2>
+              <p item-end>{{team.name}}</p>
+          </ion-item>
+          <ion-item *ngIf="team.number_of_member">
+              <h2>Số Thành Viên</h2>
+              <p item-end>{{team.number_of_member}}</p>
+          </ion-item>
+          <ion-item *ngIf="team.usual_match_time" text-wrap>
+              <h2>Đội thường đá vào lúc</h2>
+              <p>{{team.usual_match_time}}</p>
+          </ion-item>
+          <ion-item *ngIf="team.average_age">
+              <h2>Tuổi trung binh</h2>
+              <p item-end>{{team.average_age}}</p>
+          </ion-item>
+          <ion-item text-wrap *ngIf="team.message">
+            <h2>Giới thiệu</h2>
+            <p>{{team.message}}</p>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group *ngIf="team.introduce_image_link">
+          <ion-item-divider color="light">Hình ảnh</ion-item-divider>
+          <ion-card>
+            <img src="{{team.introduce_image_link}}">
+          </ion-card>
+        </ion-item-group>
+
       </ion-list>
     </ion-content>
   `,
@@ -971,30 +1010,56 @@ export class ModalTeamDetail {
     </ion-header>
     <ion-content>
       <ion-list>
-        <ion-item>
-            <ion-label>Tên : </ion-label>
-            <p item-end>{{player.name}}</p>
-        </ion-item>
-        <ion-item>
-            <ion-label>Quận</ion-label>
-            <p item-end>2</p>
-        </ion-item>
-        <ion-item>
-            <ion-label>Tuổi trung binh</ion-label>
-            <p item-end>{{player.name}}</p>
-        </ion-item>
-        <ion-item>
-            <ion-label>Số Thành Viên</ion-label>
-            <p item-end>{{player.name}}</p>
-        </ion-item>
-        <ion-item text-wrap >
-            <ion-label>Thoi gian hoat dong</ion-label>
-            <p>{{player.name}} </p>
-        </ion-item>
-        <ion-item text-wrap *ngIf="player.name">
-          <ion-label>Giới thiệu</ion-label>
-          <p>{{player.name}}</p>
-        </ion-item>
+        <ion-item-group>
+          <ion-item-divider color="light">Chi tiết</ion-item-divider>
+          <ion-item *ngIf="player.district_name">
+              <ion-label>Địa chỉ</ion-label>
+              <p item-end>Quận {{player.district_name}} - {{player.city_name}} </p>
+          </ion-item>
+          <ion-item *ngIf="player.ground_type_name">
+              <ion-label>Loại sân</ion-label>
+              <p item-end>{{player.ground_type_name}}</p>
+          </ion-item>
+          <ion-item *ngIf="player.position_name">
+              <ion-label>Vị trí</ion-label>
+              <p item-end>{{player.position_name}}</p>
+          </ion-item>
+          <ion-item *ngIf="player.level_name">
+              <ion-label>Trình độ</ion-label>
+              <p item-end>{{player.level_name}}</p>
+          </ion-item>
+        </ion-item-group>
+        <ion-item-group>
+          <ion-item-divider color="light">Thông tin cá nhân </ion-item-divider>
+          <ion-item>
+              <ion-label>Tên : </ion-label>
+              <p item-end>{{player.name}}</p>
+          </ion-item>
+          <ion-item *ngIf="player.age">
+              <ion-label>Tuổi</ion-label>
+              <p item-end>{{player.age}}</p>
+          </ion-item>
+          <ion-item *ngIf="player.job">
+              <ion-label>Nghề nghiệp</ion-label>
+              <p item-end>{{player.job}}</p>
+          </ion-item>
+          <ion-item *ngIf="player.phone_number">
+              <ion-label>SĐT</ion-label>
+              <p item-end>{{player.phone_number}}</p>
+          </ion-item>
+          <ion-item text-wrap *ngIf="player.message">
+            <ion-label>Giới thiệu</ion-label>
+            <p>{{player.message}}</p>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group *ngIf="player.introduce_image_link">
+          <ion-item-divider color="light">Hình ảnh </ion-item-divider>
+          <ion-card>
+            <img src="{{player.introduce_image_link}}">
+          </ion-card>
+        </ion-item-group>
+
       </ion-list>
     </ion-content>
   `,

@@ -96,15 +96,7 @@ export class FindingTeamPage {
   //Modal
   async openAddModal()
   {
-    let data = {
-      cities          : this.cities, 
-      levels          : this.levels, 
-      positions       : this.positions, 
-      currentPlayer   : this.currentPlayer,
-      districtsByCity : this.districtsByCity, 
-      filterData      : this.defaultFilterData,
-    };
-    let modal = this.modalCtrl.create(ModalAddFindingTeam, data);
+    let modal = this.modalCtrl.create(ModalAddFindingTeam, this.navParams.data);
     modal.onDidDismiss((data: any) => {
       if(data) {
         this.apiService.handlePostResult(data.code);
@@ -117,7 +109,7 @@ export class FindingTeamPage {
 
   openDetailModal(findingTeam) 
   {
-    let data = {findingTeam: findingTeam};
+    let data = {findingData: findingTeam};
     let modal = this.modalCtrl.create(ModalFindingTeamDetail, data);
     modal.present();
   }
@@ -167,47 +159,83 @@ export class FindingTeamPage {
     </ion-header>
     <ion-content>
       <ion-list>
-        <ion-item>
-          <label>Tên</label>
-          <p item-end>{{findingTeam.player_name}}</p>
-        </ion-item>
-        <ion-item>
-          <label>Quận</label>
-          <p item-end>{{findingTeam.district_name}}</p>
-        </ion-item>
-        <ion-item>
-          <label>Vị Trí</label>
-          <p item-end>{{findingTeam.position_name}}</p>
-        </ion-item>
-        <ion-item>
-          <label>Trình</label>
-          <p item-end>{{findingTeam.level_name}}</p>
-        </ion-item>
-        <ion-item text-wrap *ngIf="findingTeam.message">
-          <h2>Lời nhắn</h2>
-          <p>{{findingTeam.message}}</p>
-        </ion-item>
-        <ion-item>
-          <label>SĐT</label>
-          <p item-end>{{findingTeam.phone_number}}</p>
-          <ion-icon name="call" item-end (click)="call(findingTeam.phone_number)" smaill></ion-icon>
-        </ion-item>
-        <ion-item *ngIf="!findingTeam.by_admin">
-         <button ion-button clear (click)="openDetailModal(findingTeam.player_id)">Xem thông tin cầu thủ</button>
+
+        <ion-item-group>
+          <ion-item-divider color="light">Địa điểm</ion-item-divider>
+          <ion-item>
+            <label>Thành phố</label>
+            <p item-end>{{findingData.city_name}}</p>
+          </ion-item>
+          <ion-item>
+            <label>Quận</label>
+            <p item-end>{{findingData.district_name}}</p>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group *ngIf="findingData.date || findingData.time"> 
+          <ion-item-divider color="light">Thời gian</ion-item-divider>
+          <ion-item *ngIf="findingData.date">
+            <label>Ngày</label>
+            <p item-end>{{findingData.date}}</p>
+          </ion-item>
+          <ion-item *ngIf="findingData.time">
+            <label>Giờ</label>
+            <p item-end>{{findingData.time}}</p>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group>
+          <ion-item-divider color="light">Cần tìm đội:</ion-item-divider>
+          <ion-item>
+            <label>Loại sân</label>
+            <p item-end>{{findingData.ground_type_name}}</p>
+          </ion-item>
+          <ion-item>
+            <label>Vị Trí</label>
+            <p item-end>{{findingData.position_name}}</p>
+          </ion-item>
+          <ion-item>
+            <label>Trình</label>
+            <p item-end>{{findingData.level_name}}</p>
+          </ion-item>
+          <ion-item text-wrap *ngIf="findingData.message">
+            <h2>Lời nhắn</h2>
+            <p>{{findingData.message}}</p>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group>
+          <ion-item-divider color="light">Thời gian</ion-item-divider>
+        </ion-item-group>
+        <ion-item-group>
+          <ion-item-divider color="light">Liên hệ</ion-item-divider>
+          <ion-item>
+            <label>Tên</label>
+            <p item-end>{{findingData.player_name}}</p>
+          </ion-item>
+          <ion-item>
+            <ion-icon item-start name="call" (click)="call(findingData.phone_number)" smaill color="secondary"></ion-icon>
+            <label>SĐT</label>
+            <p item-end>{{findingData.phone_number}}</p>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item *ngIf="false">
+         <button ion-button clear (click)="openDetailModal(findingData.player_id)">Xem thông tin cầu thủ</button>
         </ion-item>
       </ion-list>      
     </ion-content>
   `,
 })
 export class ModalFindingTeamDetail {
-  findingTeam;
+  findingData;
   constructor(
     public params     : NavParams,
     public apiService : ApiService,
     public viewCtrl   : ViewController,
     public modalCtrl  : ModalController,
   ) {
-    this.findingTeam = this.params.get('findingTeam');
+    this.findingData = this.params.get('findingData');
   }
 
   dismiss() 
@@ -376,7 +404,7 @@ export class ModalFilterFindingTeam {
           <ion-item-group>
             <ion-item-divider color="light">Thời gian</ion-item-divider>
             <ion-item>
-              <ion-label>Đặt ngày muốn tìm kèo: </ion-label>
+              <ion-label>Chọn ngày cần tìm:</ion-label>
               <ion-toggle formControlName="isBooked"></ion-toggle>
             </ion-item>
             <ion-item *ngIf="findingTeamForm.value.isBooked">
@@ -392,21 +420,27 @@ export class ModalFilterFindingTeam {
           <ion-item-group>
             <ion-item-divider color="light">Cần tìm</ion-item-divider>
             <ion-item>
-                <ion-label stacked>Vị Trí *</ion-label>
-                <ion-select formControlName="positionId" >
-                  <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
-                </ion-select>
-              </ion-item>
-              <ion-item>
-                <ion-label stacked>Trình *</ion-label>
-                <ion-select formControlName="levelId" >
-                  <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
-                </ion-select>
-              </ion-item>
-              <ion-item text-wrap>
-                <ion-label stacked>Lời nhắn</ion-label>
-                <ion-textarea formControlName="message"></ion-textarea>
-              </ion-item>
+              <ion-label stacked>Loại Sân *</ion-label>
+              <ion-select formControlName="groundTypeId" >
+                <ion-option *ngFor="let groundType of groundTypes" value="{{groundType.id}}">{{groundType.value}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label stacked>Vị Trí *</ion-label>
+              <ion-select formControlName="positionId" >
+                <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label stacked>Trình *</ion-label>
+              <ion-select formControlName="levelId" >
+                <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
+              </ion-select>
+            </ion-item>
+            <ion-item text-wrap>
+              <ion-label stacked>Lời nhắn</ion-label>
+              <ion-textarea formControlName="message"></ion-textarea>
+            </ion-item>
           </ion-item-group>
           
           <ion-item-group>
@@ -441,6 +475,7 @@ export class ModalAddFindingTeam {
   levels          : any;
   districts       : any;
   positions       : any;
+  groundTypes     : any;
   districtsByCity : any;
 
   currentDate     : string;
@@ -454,10 +489,10 @@ export class ModalAddFindingTeam {
   currentPlayer   : any;
 
   constructor(
-    public params: NavParams,
-    public apiService: ApiService,
-    public viewCtrl: ViewController,
-    public formBuilder: FormBuilder,
+    public params      : NavParams,
+    public apiService  : ApiService,
+    public formBuilder : FormBuilder,
+    public viewCtrl    : ViewController,
   ) {
     let now     = new Date();
     let expired = new Date();
@@ -474,9 +509,10 @@ export class ModalAddFindingTeam {
     this.levels          = this.params.get('levels');
     this.cities          = this.params.get('cities');
     this.positions       = this.params.get('positions');
+    this.groundTypes     = this.params.get('groundTypes');
     this.districtsByCity = this.params.get('districtsByCity');
 
-    this.filterData      = this.params.get('filterData');
+    this.filterData      = this.params.get('defaultFilterData');
     this.currentPlayer   = this.params.get('currentPlayer');
 
     this.districts = this.districtsByCity[this.filterData.cityId].districts;
@@ -486,6 +522,7 @@ export class ModalAddFindingTeam {
       districtIds : [this.filterData.districtIds, Validators.required],
       positionId  : ['', Validators.required],
       levelId     : [this.filterData.levelIds, Validators.required],
+      groundTypeId: [this.filterData.groundTypeId, Validators.required],
       isBooked    : [true],
       message     : [''],
       matchHour   : [''],

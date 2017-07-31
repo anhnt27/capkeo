@@ -87,10 +87,14 @@ export class MyApp {
                 // sucesss
                 env.nativeStorage.setItem('jwtToken', result.token);
                 // alert('received token' + env.nativeStorage.getItem('jwtToken');
+                env.nav.setRoot(HomePage);
+              } else {
+                env.nav.setRoot(LoginPage);
               }
+            }, error => {
+              env.nav.setRoot(LoginPage);
             });
 
-            env.nav.setRoot(HomePage);
             env.splashScreen.hide();
           }, function (error) {
             //we don't have the user data so we will ask him to log in

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { NativeStorage } from '@ionic-native/native-storage';
-import { IonicPage, NavController, NavParams, ViewController, ModalController } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, ViewController, ModalController, Events } from 'ionic-angular';
 
 import { ApiService } from '../../providers/api-service/api-service';
 
@@ -31,6 +31,7 @@ export class SettingPage {
   districts       : any;
   districtsByCity : any;
   positions       : any;
+  groundTypes     : any;
   levels          : any;
   filterData      : any;
   
@@ -39,13 +40,15 @@ export class SettingPage {
 
   constructor(
     public navParams     : NavParams,
+    public events        : Events,
     public apiService    : ApiService,
     public navCtrl       : NavController, 
-    public modalCtrl     : ModalController, 
     public nativeStorage : NativeStorage,
+    public modalCtrl     : ModalController, 
     ) 
   {
-    this.settingSegment = "notifications";
+    console.log('nav Param setting', navParams.data);
+    this.settingSegment = "information";
     
     this.typeFindingTeam   = this.apiService.typeFindingTeam;
     this.typeFindingMatch  = this.apiService.typeFindingMatch;
@@ -54,6 +57,7 @@ export class SettingPage {
     this.levels          = navParams.data.levels;
     this.cities          = navParams.data.cities;
     this.positions       = navParams.data.positions;
+    this.groundTypes     = navParams.data.groundTypes;
     this.districtsByCity = navParams.data.districtsByCity;
     this.currentPlayer   = navParams.data.currentPlayer;
     this.filterData      = navParams.data.defaultFilterData;
@@ -67,6 +71,7 @@ export class SettingPage {
 
   async ionViewDidLoad() 
   {
+    console.log('levels', this.levels);
     this.apiService.handleLoading();
     await this.updateDistrict();
   }
@@ -84,6 +89,7 @@ export class SettingPage {
     this.apiService.handleLoading();
     this.apiService.updatePlayer(this.currentPlayer)
     .then((data: any) => {
+      this.events.publish('profile:updated');
       this.apiService.handlePostResult(data.code);
     }, error => console.log(error));
   }
@@ -123,9 +129,15 @@ export class SettingPage {
       env.notificationSetting = data;
     }, error => console.log(error));
 
-    let data = {cities: this.cities, districtsByCity: this.districtsByCity, 
-      positions: this.positions, levels: this.levels, filterData: this.filterData, type: type, 
-      notificationSetting: this.notificationSetting
+    let data = {
+            type                : type, 
+            cities              : this.cities, 
+            levels              : this.levels, 
+            positions           : this.positions, 
+            filterData          : this.filterData, 
+            groundTypes         : this.groundTypes,
+            districtsByCity     : this.districtsByCity, 
+            notificationSetting : this.notificationSetting,
     };
     let modal = this.modalCtrl.create(FindingPlayerSettingModal, data);
 
@@ -140,11 +152,6 @@ export class SettingPage {
       }
     });
     modal.present();
-  }
-
-  call(phoneNumber)
-  {
-    this.apiService.call(phoneNumber);
   }
 }
 
@@ -166,25 +173,31 @@ export class SettingPage {
     <ion-content>
       <ion-list>
         <ion-item>
-          <ion-label stacked>Thành Phố</ion-label>
+          <ion-label stacked>Thành Phố *</ion-label>
           <ion-select [(ngModel)]="selectedCity" (ngModelChange)="updateDistrict()" cancelText="Cancel" okText="Select">
             <ion-option *ngFor="let city of cities" value="{{city.id}}">{{city.name}}</ion-option>
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-label stacked>Quận/Huyện</ion-label>
+          <ion-label stacked>Quận/Huyện *</ion-label>
           <ion-select multiple="true" [(ngModel)]="selectedDistricts">
             <ion-option *ngFor="let district of districts" value="{{district.id}}">{{district.name}}</ion-option>
           </ion-select>
         </ion-item>
+        <ion-item>
+          <ion-label stacked>Loại Sân *</ion-label>
+          <ion-select multiple="true" [(ngModel)]="selectedGroundTypes">
+            <ion-option *ngFor="let groundType of groundTypes" value="{{groundType.id}}">{{groundType.value}}</ion-option>
+          </ion-select>
+        </ion-item>
         <ion-item *ngIf="type !== this.apiService.typeFindingMatch">
-          <ion-label stacked>Vị Trí</ion-label>
+          <ion-label stacked>Vị Trí *</ion-label>
           <ion-select multiple="true" [(ngModel)]="selectedPositions" >
             <ion-option *ngFor="let position of positions" value="{{position.id}}">{{position.value}}</ion-option>
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-label stacked>Trình</ion-label>
+          <ion-label stacked>Trình *</ion-label>
           <ion-select multiple="true" [(ngModel)]="selectedLevels">
             <ion-option *ngFor="let level of levels" value="{{level.id}}">{{level.value}}</ion-option>
           </ion-select>
@@ -201,22 +214,21 @@ export class SettingPage {
   `,
 })
 export class FindingPlayerSettingModal {
-  cities: any;
-  districtsByCity: any;
-  districts: any;
-  positions: any;
-  levels: any;
-  currentDate: string;
-  notificationSetting: any;
-
-  selectedCity: any;
-  selectedDistricts: any;
-  selectedPositions: any;
-  selectedLevels: any;
-
-  filterData: any;
-
-  type: number;
+  cities              : any;
+  districtsByCity     : any;
+  districts           : any;
+  positions           : any;
+  groundTypes         : any;
+  levels              : any;
+  notificationSetting : any;
+  selectedCity        : any;
+  selectedDistricts   : any;
+  selectedPositions   : any;
+  selectedGroundTypes : any;
+  selectedLevels      : any;
+  filterData          : any;
+  currentDate         : string;
+  type                : number;
 
   constructor(
     public params: NavParams,
@@ -227,27 +239,35 @@ export class FindingPlayerSettingModal {
     this.levels              = this.params.get('levels');
     this.cities              = this.params.get('cities');
     this.positions           = this.params.get('positions');
+    this.groundTypes         = this.params.get('groundTypes');
     this.districtsByCity     = this.params.get('districtsByCity');
     this.notificationSetting = this.params.get('notificationSetting');
 
     this.type       = this.params.get('type');
     this.filterData = this.params.get('filterData');
-    console.log(this.notificationSetting);
 
     this.selectedCity      = (this.notificationSetting.cityId && this.notificationSetting.cityId.length) ? this.notificationSetting.cityId : this.filterData.cityId;
     this.updateDistrict();
     this.selectedLevels    = this.notificationSetting.levelIds.length ? this.notificationSetting.levelIds : this.filterData.levelIds;
     this.selectedDistricts = this.notificationSetting.districtIds.length ? this.notificationSetting.districtIds : this.filterData.districtIds;
     this.selectedPositions = this.notificationSetting.positionIds.length ? this.notificationSetting.positionIds : this.filterData.positionIds;
+    this.selectedGroundTypes = this.notificationSetting.groundTypeIds.length ? this.notificationSetting.groundTypeIds : this.filterData.groundTypeId;
   }
   updateDistrict() {
     if(this.selectedCity) {
       this.districts = this.districtsByCity[this.selectedCity].districts;
     }
   }
-
+ 
   save() {
-    let data = {'cityId': this.selectedCity, 'districtIds': this.selectedDistricts, 'positionIds': this.selectedPositions, 'levelIds': this.selectedLevels, type: this.type};
+    let data = {
+        type          : this.type,
+        cityId        : this.selectedCity, 
+        levelIds      : this.selectedLevels,
+        positionIds   : this.selectedPositions,
+        districtIds   : this.selectedDistricts, 
+        groundTypeIds : this.selectedGroundTypes,
+    };
     this.viewCtrl.dismiss(data);
   }
 

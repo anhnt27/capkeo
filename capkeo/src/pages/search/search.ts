@@ -21,6 +21,7 @@ export class SearchPage {
   defaultParams: any;
 
   constructor(public navCtrl: NavController, public navParams: NavParams) {
+    console.log('nav Param SearchPage', navParams.data);
     this.defaultParams = navParams.data;
   }
 

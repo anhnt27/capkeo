@@ -24,8 +24,11 @@
   </ion-item>
   <ion-list>
     <ion-card *ngFor="let stadium of stadiums" (click)="openDetailModal(stadium)">
+      <ion-card-header>
+          <b> Sân {{stadium.name}}</b>
+      </ion-card-header>
       <ion-card-content>
-      <b> [{{stadium.name}}]</b> -- {{stadium.address}}
+        {{stadium.address}}
       </ion-card-content>
     </ion-card>
   </ion-list>

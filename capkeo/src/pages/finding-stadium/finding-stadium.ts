@@ -52,12 +52,15 @@ export class FindingStadiumPage {
   
   updateDistrict() 
   {
+    this.selectedDistrict = '';
+    this.stadiums = [];
     if(this.selectedCity) {
       this.districts = this.districtsByCity[this.selectedCity].districts;
     }
   }
   updateStadium()
   {
+    this.stadiums = [];
     this.apiService.handleLoading();
     this.getFindingStadiums();
   }

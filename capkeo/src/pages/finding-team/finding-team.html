@@ -21,7 +21,7 @@
   <ion-list>
     <ion-card *ngFor="let findingTeam of findingTeams" (click)="openDetailModal(findingTeam)">
       <ion-card-header>
-        {{ findingTeam.time }}
+        {{ findingTeam.date }}
       </ion-card-header>
       <ion-card-content>
       [Quận {{findingTeam.district_name}}] <b> -- {{findingTeam.position_name}} : {{findingTeam.player_name}}</b> đang tìm kèo!

@@ -10,7 +10,6 @@ import { ModalFindingPlayerDetail } from '../finding-player/finding-player';
 import { ModalPlayerDetail, ModalTeamDetail } from '../../pages/team/team';
 
 import { ApiService } from '../../providers/api-service/api-service';
-import { ConstantService } from '../../providers/constant-service/constant-service';
 /**
  * Generated class for the NotificationPage page.
  *
@@ -32,13 +31,12 @@ export class NotificationPage {
 
 
   constructor(
-    public events: Events, 
-    public navParams: NavParams, 
-    public apiService: ApiService,
-    public navCtrl: NavController, 
-    public modalCtrl: ModalController, 
-    public nativeStorage: NativeStorage, 
-    public constantService: ConstantService,
+    public events        : Events, 
+    public navParams     : NavParams, 
+    public apiService    : ApiService,
+    public nativeStorage : NativeStorage, 
+    public navCtrl       : NavController, 
+    public modalCtrl     : ModalController, 
   ) {
     this.notifications = [];
   }
@@ -80,7 +78,7 @@ export class NotificationPage {
       case this.apiService.typeFindingPlayer:
         this.apiService.getFindingPlayerById(notification.data.params.id)
         .then(data => {
-          let dataForModal = {findingPlayer: data};
+          let dataForModal = {findingData: data};
           console.log('open modal');
           this.openDetailModal(ModalFindingPlayerDetail, dataForModal);
         }, error => console.log(error));
@@ -88,14 +86,14 @@ export class NotificationPage {
       case this.apiService.typeFindingTeam:
         this.apiService.getFindingTeamById(notification.data.params.id)
         .then(data => {
-          let dataForModal = {findingTeam: data};
+          let dataForModal = {findingData: data};
           this.openDetailModal(ModalFindingTeamDetail, dataForModal);
         }, error => console.log(error));
         break;
       case this.apiService.typeFindingMatch:
         this.apiService.getFindingMatchById(notification.data.params.id)
         .then(data => {
-          let dataForModal = {findingMatch: data};
+          let dataForModal = {findingData: data};
           this.openDetailModal(ModalFindingMatchDetail, dataForModal);
         }, error => console.log(error));
         break;

@@ -96,14 +96,7 @@ async ionViewDidLoad()
 
   // open modal
   async openAddModal(){
-    let data = {
-      cities          : this.cities, 
-      levels          : this.levels, 
-      currentPlayer   : this.currentPlayer, 
-      districtsByCity : this.districtsByCity, 
-      filterData      : this.defaultFilterData, 
-      };
-    let modal = this.modalCtrl.create(ModalAddFindingMatch, data);
+    let modal = this.modalCtrl.create(ModalAddFindingMatch, this.navParams.data);
     modal.onDidDismiss((data: any) => {
       if(data) {
         this.apiService.handlePostResult(data.code);
@@ -116,7 +109,7 @@ async ionViewDidLoad()
   }
 
   openDetailModal(findingMatch) {
-    let data  = {findingMatch: findingMatch};
+    let data  = {findingData: findingMatch};
     let modal = this.modalCtrl.create(ModalFindingMatchDetail, data);
     modal.present();
   }
@@ -166,41 +159,80 @@ async ionViewDidLoad()
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-item>
-        <label>Tên</label>
-        <p item-end>{{findingMatch.player_name}}</p>
-      </ion-item>
-      <ion-item>
-        <label>Quận</label>
-        <p item-end>{{findingMatch.district_name}}</p>
-      </ion-item>
-      <ion-item>
-        <label>Địa Chỉ</label>
-        <p item-end>{{findingMatch.address}}</p>
-      </ion-item>
-      <ion-item>
-        <label>Trình</label>
-        <p item-end>{{findingMatch.level_name}}</p>
-      </ion-item>
-      <ion-item text-wrap *ngIf="findingMatch.message">
-        <h2>Lời nhắn</h2>
-        <p>{{findingMatch.message}}</p>
-      </ion-item>
-      <ion-item>
-        <label>SĐT</label>
-        <p item-end>{{findingMatch.phone_number}}</p>
-        <ion-icon name="call" item-end (click)="call(findingMatch.phone_number)" smaill></ion-icon>
-      </ion-item>
-      <ion-item *ngIf="! findingMatch.by_admin">
+
+      <ion-item-group>
+        <ion-item-divider color="light">Địa điểm</ion-item-divider>
+        <ion-item>
+          <label>Thành phố</label>
+          <p item-end>{{findingData.city_name}}</p>
+        </ion-item>
+        <ion-item>
+          <label>Quận</label>
+          <p item-end>{{findingData.district_name}}</p>
+        </ion-item>
+        <ion-item>
+          <label>Địa Chỉ</label>
+          <p item-end>{{findingData.address}}</p>
+        </ion-item>
+      </ion-item-group>
+
+      <ion-item-group *ngIf="findingData.date || findingData.time">
+        <ion-item-divider color="light">Thời gian</ion-item-divider>
+        <ion-item *ngIf="findingData.date">
+          <label>Ngày</label>
+          <p item-end>{{findingData.date}}</p>
+        </ion-item>
+        <ion-item *ngIf="findingData.time">
+          <label>Giờ</label>
+          <p item-end>{{findingData.time}}</p>
+        </ion-item>
+      </ion-item-group>
+
+      <ion-item-group>
+        <ion-item-divider color="light">Cần tìm</ion-item-divider>
+        <ion-item>
+          <label>Loại sân</label>
+          <p item-end>{{findingData.ground_type_name}}</p>
+        </ion-item>
+        <ion-item>
+          <label>Trình</label>
+          <p item-end>{{findingData.level_name}}</p>
+        </ion-item>
+        <ion-item text-wrap *ngIf="findingData.message">
+          <h2>Lời nhắn</h2>
+          <p>{{findingData.message}}</p>
+        </ion-item>
+      </ion-item-group>
+
+      <ion-item-group>
+        <ion-item-divider color="light">Thời gian</ion-item-divider>
+      </ion-item-group>
+      <ion-item-group>
+        <ion-item-divider color="light">Liên hệ</ion-item-divider>
+        <ion-item>
+          <label>Tên</label>
+          <p item-end>{{findingData.player_name}}</p>
+        </ion-item>
+        <ion-item >
+          <label>SĐT</label>
+          <ion-icon name="call" item-start (click)="call(findingData.phone_number)" smaill color="secondary"></ion-icon>
+          <p item-end>{{findingData.phone_number}}</p>
+        </ion-item>
+      </ion-item-group>
+      <ion-card>
+        <iframe src="http://www.facebook.com/plugins/comments.php?href=http://techcrunch.com/2014/09/17/life-is-tough/" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100%; height:3806px;" allowTransparency="true"></iframe>
+      </ion-card>
+        
+      <ion-item *ngIf="false">
         <label>Chi tiết đội bóng</label>
-        <button ion-button clear item-end (click)="openDetailModal(findingMatch.team_id)">Xem</button>
+        <button ion-button clear item-end (click)="openDetailModal(findingData.team_id)">Xem</button>
       </ion-item>
     </ion-content>
   `,
 })
 export class ModalFindingMatchDetail {
   team;
-  findingMatch;
+  findingData;
   
   constructor(
     public params     : NavParams,
@@ -208,7 +240,7 @@ export class ModalFindingMatchDetail {
     public viewCtrl   : ViewController,
     public modalCtrl  : ModalController,
   ) {
-    this.findingMatch = this.params.get('findingMatch');
+    this.findingData = this.params.get('findingData');
   }
 
   dismiss() {
@@ -379,7 +411,7 @@ export class ModalFilterFindingMatch {
           <ion-item-group>
             <ion-item-divider color="light">Thời gian</ion-item-divider>
             <ion-item>
-              <ion-label>Đã đặt sân</ion-label>
+              <ion-label>Chọn ngày cần tìm:</ion-label>
               <ion-toggle formControlName="isBooked"></ion-toggle>
             </ion-item>
             <ion-item *ngIf="findingMatchForm.value.isBooked">
@@ -394,6 +426,12 @@ export class ModalFilterFindingMatch {
 
           <ion-item-group>
             <ion-item-divider color="light">Cần tìm</ion-item-divider>
+            <ion-item>
+              <ion-label stacked>Loại Sân *</ion-label>
+              <ion-select formControlName="groundTypeId" >
+                <ion-option *ngFor="let groundType of groundTypes" value="{{groundType.id}}">{{groundType.value}}</ion-option>
+              </ion-select>
+            </ion-item>
             <ion-item>
               <ion-label stacked>Trình</ion-label>
               <ion-select formControlName="levelId" >
@@ -437,6 +475,7 @@ export class ModalAddFindingMatch {
     cities          : any;
     levels          : any;
     districts       : any;
+    groundTypes     : any;
     districtsByCity : any;
 
     currentDate     : string;
@@ -467,10 +506,11 @@ export class ModalAddFindingMatch {
     this.expiredDate = expired.toISOString().substring(0, 10);
     
     this.levels          = this.params.get('levels');
+    this.groundTypes     = this.params.get('groundTypes');
     this.cities          = this.params.get('cities');
     this.districtsByCity = this.params.get('districtsByCity');
     
-    this.filterData      = this.params.get('filterData');
+    this.filterData      = this.params.get('defaultFilterData');
     
     this.currentPlayer   = this.params.get('currentPlayer');
     
@@ -481,6 +521,7 @@ export class ModalAddFindingMatch {
       cityId        : [this.filterData.cityId],
       districtIds   : [this.filterData.districtIds, Validators.required],
       levelId       : [this.filterData.levelIds, Validators.required],
+      groundTypeId  : [this.filterData.groundTypeId, Validators.required],
       address       : [''],
       message       : [''],
       isBooked      : [true],

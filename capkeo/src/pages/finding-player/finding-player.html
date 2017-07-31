@@ -21,7 +21,7 @@
   <ion-list>
     <ion-card *ngFor="let findingPlayer of findingPlayers" (click)="openDetailModal(findingPlayer)">
       <ion-card-header>
-        {{ findingPlayer.time }}
+        {{ findingPlayer.date }}
       </ion-card-header>
       <ion-card-content>
       [ Quận {{findingPlayer.district_name}}] -- <b>{{findingPlayer.player_name}}</b> đang cần  {{findingPlayer.position_name}} trợ chiến !
